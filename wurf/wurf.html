@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset=utf-8>
+		<title>
+			Three.js wurf
+		</title>
+		<style>
+			body { 
+				margin : 0;
+			}
+			canvas { 
+				width: 100%; 
+				height: 100% 
+			}
+		</style>
+	</head>
+
+	<body>
+
+		<script src="../../three.js/build/three.js">
+		</script>
+
+		<script>
+		
+			'use strict'
+		
+			var run = false;
+			
+			function Sphere ( mass, rad, pos, vel, acc ) {
+					
+				this.mass = mass;
+				this.rad  = rad;
+				this.pos  = pos;
+				this.vel  = vel;
+				this.acc  = acc;
+			}
+			
+			Sphere.prototype.move = function ( dt ) {
+				
+				var dp = this.vel.clone( );
+				var dv = this.acc.clone( );
+				
+				dp.multiplyScalar( dt );				
+				dv.multiplyScalar( dt );				
+				
+				var np = this.pos.clone( );
+				
+				np.add( dp );
+				
+				if ( np.y < sphere.rad ) {
+				
+					this.vel.add( dv );
+					this.vel.x *= .9;
+					this.vel.y *= -.7;
+					this.vel.z *= .9;
+				
+					np.y = 2. * sphere.rad - np.y;
+				}
+				else {
+
+					this.vel.add( dv );
+				}
+				
+				if( this.vel.dot( this.vel) < 1e-5 )
+				
+					this.vel.set( 0., 0., 0. );				
+
+				this.pos = np.clone( );
+			}
+
+			var sphere = new Sphere( 1., 1., new THREE.Vector3( 0., 0., 0. ), new THREE.Vector3( 0., 0., 0. ), new THREE.Vector3( 0., -9.81, 0. ) );
+			
+			var scene = new THREE.Scene( );
+			
+			var camera = new THREE.PerspectiveCamera ( 45, window.innerWidth / window.innerHeight, .1, 1000 );
+			
+			var renderer = new THREE.WebGLRenderer( );
+
+			renderer.shadowMap.enabled	= true;
+
+			renderer.shadowMap.type	= THREE.PCFSoftShadowMap;
+		
+			var texture = THREE.ImageUtils.loadTexture( '../pix/checkerboard.jpg' );
+			
+			texture.wrapT = THREE.RepeatWrapping;  // This doesn't seem to work;
+			
+			var plane = new THREE.Mesh( new THREE.PlaneGeometry( 1000, 10 ), new THREE.MeshPhongMaterial( { map : texture } ) );
+			
+			plane.position.x -= 500;
+			
+			plane.receiveShadow = true;			
+
+			plane.castShadow = false;			
+			
+			plane.rotation.x = -.5 * Math.PI;  // Not sure what this number represents.
+
+			plane.doubleSided = true;
+
+			scene.add( plane );			
+			
+			var ambientLight = new THREE.AmbientLight( 0x404040 );
+			
+			scene.add( ambientLight );
+
+			var light = new THREE.PointLight( 0xa0c0f0, 1, 100 );
+
+			light.castShadow		= true;
+			
+			light.position.set( 0, +13, 0 );
+
+			scene.add( light );
+
+			var directionalLight = new THREE.DirectionalLight( 0xf0d0a0, 1 );
+
+			directionalLight.position.set( 0, 5, 5 ).normalize( );
+
+			directionalLight.castShadow		= true;
+
+			scene.add( directionalLight );
+
+
+			var geom_sphere = new THREE.SphereGeometry( 1, 32, 32 );
+			
+			var mesh_sphere = new THREE.Mesh( geom_sphere, new THREE.MeshPhongMaterial( { color : 0xe0f0ff } ) );
+
+			mesh_sphere.castShadow = true;			
+			mesh_sphere.receiveShadow = false;			
+
+			scene.add( mesh_sphere );			
+						
+			var arrowHelperX = new THREE.ArrowHelper( new THREE.Vector3( 1., 0., 0. ), new THREE.Vector3( 0., 0.01, 0. ), 2, 0xff0000, .2, .1 ); 
+			
+			arrowHelperX.castShadow		= true;
+			this.scene.add( arrowHelperX );
+
+			var arrowHelperY = new THREE.ArrowHelper( new THREE.Vector3( 0., 1., 0. ), new THREE.Vector3( 0., 0., 0 ), 2, 0x00ff00, .2, .1 );
+			arrowHelperY.castShadow		= true;
+			 
+			
+			this.scene.add( arrowHelperY );
+
+			var arrowHelperZ = new THREE.ArrowHelper( new THREE.Vector3( 0., 0., 1. ), new THREE.Vector3( 0., 0.01, 0 ), 2, 0x0000ff, .2, .1 ); 
+			arrowHelperZ.castShadow		= true;
+			
+			this.scene.add( arrowHelperZ );
+
+			
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			
+			document.body.appendChild( renderer.domElement );
+			
+			var tm = 0;
+			
+			var then = ( new Date( ) ).getTime( );			
+			
+			function render( ) {
+			
+				if( !run )
+
+					return;				
+
+				requestAnimationFrame( render );
+
+				var now = ( new Date( ) ).getTime( );			
+
+				var dt = .001 * ( now - then );
+		
+				then = now;
+
+				if( 1. < dt || dt < 1. / 120. )
+				
+					return;				
+		
+				sphere.move( dt );
+				
+				mesh_sphere.position.set( sphere.pos.x, sphere.pos.y, sphere.pos.z );
+				
+				camera.position.set ( sphere.pos.x + 20. * Math.cos( .0001 * now ), 10., sphere.pos.z + 20. * Math.sin( .0001 * now ) );
+				camera.up = new THREE.Vector3( 0, 1, 0 );
+				camera.lookAt( sphere.pos.clone( ).multiplyScalar( 1. ) );
+				renderer.render( scene, camera );
+
+				document.getElementById( "coords" ).innerHTML = '( ' + sphere.pos.x + ', ' + sphere.pos.y + ', ' + sphere.pos.z + ' )';					
+			}
+			
+			function los( ) {
+				
+				if( run ) {
+				
+					run = false;
+					
+					document.getElementById( "los" ).innerHTML = "start simulation";					
+					
+					return;
+				}
+				
+				sphere.pos.set( -1045., 1.1, 0 );
+				sphere.vel.set( 42., 42., 0 );
+
+				run = true;
+				
+				document.getElementById( "los" ).innerHTML = "stop simulation";					
+
+				requestAnimationFrame( render );
+			}
+
+		</script>
+		
+		<button type = "button" id = "los" onclick="los( );">
+		start simulation
+		</button> 
+		<p id="coords">		
+		</p>
+
+	</body>
+
+</html>
