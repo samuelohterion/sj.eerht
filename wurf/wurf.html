@@ -81,11 +81,17 @@
 
 			renderer.shadowMap.type	= THREE.PCFSoftShadowMap;
 		
-			var texture = THREE.ImageUtils.loadTexture( '../pix/checkerboard.jpg' );
-			
+			var url = '../';		
+		
+			var texture = THREE.ImageUtils.loadTexture( url + 'pix/colors.png' );
+
+//			var texture = THREE.ImageUtils.loadTexture( 'https://github.com/samuelohterion/sj.eerht/blob/master/pix/checkerboard.jpg' );
+					
 			texture.wrapT = THREE.RepeatWrapping;  // This doesn't seem to work;
 			
-			var plane = new THREE.Mesh( new THREE.PlaneGeometry( 1000, 10 ), new THREE.MeshPhongMaterial( { map : texture } ) );
+//			var plane = new THREE.Mesh( new THREE.PlaneGeometry( 1000, 10 ), new THREE.MeshPhongMaterial( { color : 0x444444 } ) );
+
+			var plane = new THREE.Mesh( new THREE.PlaneGeometry( 1000, 10 ), new THREE.MeshPhongMaterial( { map : texture, color : 0x444444 } ) );
 			
 			plane.position.x -= 500;
 			
