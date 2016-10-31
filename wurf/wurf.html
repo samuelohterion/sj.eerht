@@ -26,6 +26,7 @@
 			'use strict'
 		
 			var run = false;
+			var tm = ( new Date ( ) ).getTime ( );
 			
 			function Sphere ( mass, rad, pos, vel, acc ) {
 					
@@ -34,6 +35,9 @@
 				this.pos  = pos;
 				this.vel  = vel;
 				this.acc  = acc;
+				this.rot  = new THREE.Vector3( 0., 0., 1. );
+				this.av   = 0.;
+				this.ang  = 0.;
 			}
 			
 			Sphere.prototype.move = function ( dt ) {
@@ -43,37 +47,42 @@
 				
 				dp.multiplyScalar( dt );				
 				dv.multiplyScalar( dt );				
+				this.vel.add( dv );
 				
 				var np = this.pos.clone( );
 				
 				np.add( dp );
 				
+				if( this.vel.dot( this.vel ) < 1e-5 ) {
+				
+					this.ang = 0; 
+					this.vel.set( 0., 0., 0. );
+					
+					return;
+				}	
+
 				if ( np.y < sphere.rad ) {
 				
-					this.vel.add( dv );
-					this.vel.x *= .9;
-					this.vel.y *= -.7;
-					this.vel.z *= .9;
-				
-					np.y = 2. * sphere.rad - np.y;
+					if ( -500 - sphere.rad < this.pos.x && this.pos.x < sphere.rad && this.vel.y < 0 ) {
+						
+						this.vel.x *= .985;
+						this.vel.y *= -.8;
+						this.vel.z *= .985;
+					
+						np.y = 2. * sphere.rad - np.y;
+						this.av = .001 * this.vel.x / ( Math.PI * this.rad ); 
+					}					
 				}
-				else {
-
-					this.vel.add( dv );
-				}
-				
-				if( this.vel.dot( this.vel) < 1e-5 )
-				
-					this.vel.set( 0., 0., 0. );				
 
 				this.pos = np.clone( );
+				this.ang = .99 * ( this.ang - this.av ); 
 			}
 
-			var sphere = new Sphere( 1., 1., new THREE.Vector3( 0., 0., 0. ), new THREE.Vector3( 0., 0., 0. ), new THREE.Vector3( 0., -9.81, 0. ) );
+			var sphere = new Sphere( 1., 4. + 3. * Math.random( ), new THREE.Vector3( 0., 0., 0. ), new THREE.Vector3( 0., 0., 0. ), new THREE.Vector3( 0., -9.81, 0. ) );
 			
 			var scene = new THREE.Scene( );
 			
-			var camera = new THREE.PerspectiveCamera ( 45, window.innerWidth / window.innerHeight, .1, 1000 );
+			var camera = new THREE.PerspectiveCamera ( 60, window.innerWidth / window.innerHeight, .2, 1000 );
 			
 			var renderer = new THREE.WebGLRenderer( );
 
@@ -81,17 +90,20 @@
 
 			renderer.shadowMap.type	= THREE.PCFSoftShadowMap;
 		
-			var texture = THREE.ImageUtils.loadTexture( 'https://github.com/samuelohterion/sj.eerht/tree/master/pix/colors.png' );
+//			var texture = THREE.ImageUtils.loadTexture( 'https://github.com/samuelohterion/sj.eerht/tree/master/pix/colors.png' );
 
-//			var texture = THREE.ImageUtils.loadTexture( 'https://github.com/samuelohterion/sj.eerht/blob/master/pix/checkerboard.jpg' );
+			var texture = THREE.ImageUtils.loadTexture( '../pix/checkerboard.jpg' );
 					
 			texture.wrapT = THREE.RepeatWrapping;  // This doesn't seem to work;
-			
-//			var plane = new THREE.Mesh( new THREE.PlaneGeometry( 1000, 10 ), new THREE.MeshPhongMaterial( { color : 0x444444 } ) );
+			texture.wrapS = THREE.RepeatWrapping;  // This doesn't seem to work;
 
-			var plane = new THREE.Mesh( new THREE.PlaneGeometry( 1000, 10 ), new THREE.MeshPhongMaterial( { map : texture, color : 0x444444 } ) );
+			texture.repeat.set( 50, 3 );
 			
-			plane.position.x -= 500;
+//			var plane = new THREE.Mesh( new THREE.PlaneGeometry( 500, 10 ), new THREE.MeshPhongMaterial( { color : 0x808080 } ) );
+
+			var plane = new THREE.Mesh( new THREE.PlaneGeometry( 500, 30 ), new THREE.MeshPhongMaterial( { map : texture } ) );
+			
+			plane.position.x -= 250;
 			
 			plane.receiveShadow = true;			
 
@@ -103,32 +115,41 @@
 
 			scene.add( plane );			
 			
-			var ambientLight = new THREE.AmbientLight( 0x404040 );
+			var ambientLight = new THREE.AmbientLight( 0x305070 );
 			
 			scene.add( ambientLight );
 
-			var light = new THREE.PointLight( 0xa0c0f0, 1, 100 );
+			var directionalLight = new THREE.DirectionalLight( 0xff8020, 1 );
 
-			light.castShadow		= true;
-			
-			light.position.set( 0, +13, 0 );
+			directionalLight.position.set( 1, 1, 1 ).normalize( );
 
-			scene.add( light );
-
-			var directionalLight = new THREE.DirectionalLight( 0xf0d0a0, 1 );
-
-			directionalLight.position.set( 0, 5, 5 ).normalize( );
-
-			directionalLight.castShadow		= true;
+			directionalLight.castShadow = true;
 
 			scene.add( directionalLight );
 
 
-			var geom_sphere = new THREE.SphereGeometry( 1, 32, 32 );
+			var light = new THREE.PointLight( 0xe0c0a0, 3 );
+
+			light.position.set( 0, 100, 0 );
+
+			light.castShadow = true;
+
+			scene.add( light );
+
+
+			var geom_sphere = new THREE.SphereGeometry( sphere.rad, 32, 32 );
 			
-			var mesh_sphere = new THREE.Mesh( geom_sphere, new THREE.MeshPhongMaterial( { color : 0xe0f0ff } ) );
+			var texSphere = THREE.ImageUtils.loadTexture( '../pix/colors.png' );
+					
+			texSphere.wrapT = THREE.RepeatWrapping;  // This doesn't seem to work;
+			texSphere.wrapS = THREE.RepeatWrapping;  // This doesn't seem to work;
+
+			texSphere.repeat.set( 1, 1 );
+			
+			var mesh_sphere = new THREE.Mesh( geom_sphere, new THREE.MeshPhongMaterial( { map : texSphere } ) );
 
 			mesh_sphere.castShadow = true;			
+			
 			mesh_sphere.receiveShadow = false;			
 
 			scene.add( mesh_sphere );			
@@ -138,7 +159,7 @@
 			arrowHelperX.castShadow		= true;
 			this.scene.add( arrowHelperX );
 
-			var arrowHelperY = new THREE.ArrowHelper( new THREE.Vector3( 0., 1., 0. ), new THREE.Vector3( 0., 0., 0 ), 2, 0x00ff00, .2, .1 );
+			var arrowHelperY = new THREE.ArrowHelper( new THREE.Vector3( 0., 1., 0. ), new THREE.Vector3( 0., 0.01, 0 ), 2, 0x00ff00, .2, .1 );
 			arrowHelperY.castShadow		= true;
 			 
 			
@@ -154,9 +175,7 @@
 			
 			document.body.appendChild( renderer.domElement );
 			
-			var tm = 0;
-			
-			var then = ( new Date( ) ).getTime( );			
+			var then = ( new Date( ) ).getTime( ) - tm;			
 			
 			function render( ) {
 			
@@ -166,7 +185,7 @@
 
 				requestAnimationFrame( render );
 
-				var now = ( new Date( ) ).getTime( );			
+				var now = ( new Date( ) ).getTime( ) - tm;			
 
 				var dt = .001 * ( now - then );
 		
@@ -176,13 +195,24 @@
 				
 					return;				
 		
-				sphere.move( dt );
+				for( var i = 0; i < 10; ++i )
+				
+						sphere.move( .1 * dt );
 				
 				mesh_sphere.position.set( sphere.pos.x, sphere.pos.y, sphere.pos.z );
 				
-				camera.position.set ( sphere.pos.x + 20. * Math.cos( .0001 * now ), 10., sphere.pos.z + 20. * Math.sin( .0001 * now ) );
+				mesh_sphere.rotateOnAxis( sphere.rot, sphere.ang );
+				
+				var lat = sphere.pos.clone( );
+				
+				lat.y = 0;
+
+				camera.position.set ( lat.x + 20. * Math.cos( .0003 * ( now - tm ) % 3142 ), 30. + 2. * sphere.rad, lat.z + 50. * Math.sin( .0002 * ( now - tm ) % 3142 ) );
+
 				camera.up = new THREE.Vector3( 0, 1, 0 );
-				camera.lookAt( sphere.pos.clone( ).multiplyScalar( 1. ) );
+
+				camera.lookAt( lat );
+
 				renderer.render( scene, camera );
 
 				document.getElementById( "coords" ).innerHTML = '( ' + sphere.pos.x + ', ' + sphere.pos.y + ', ' + sphere.pos.z + ' )';					
@@ -199,8 +229,17 @@
 					return;
 				}
 				
-				sphere.pos.set( -1045., 1.1, 0 );
-				sphere.vel.set( 42., 42., 0 );
+//				tm = ( new Date ( ) ).getTime ( );				
+				
+				sphere.ang  = 0;
+				sphere.av   = 0;
+				sphere.pos.set( -666., -100., 0 );
+				sphere.vel.set( 25., 50., 0 );
+				var nr = Math.pow( 2., 3. * Math.random( ) );
+				var or = sphere.rad; 
+				sphere.rad = nr;
+				nr /= or;
+				mesh_sphere.scale.multiplyScalar( nr );
 
 				run = true;
 				
@@ -212,7 +251,7 @@
 		</script>
 		
 		<button type = "button" id = "los" onclick="los( );">
-		start simulation
+			start simulation
 		</button> 
 		<p id="coords">		
 		</p>
