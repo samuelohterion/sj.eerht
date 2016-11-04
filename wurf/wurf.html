@@ -97,11 +97,11 @@
 			texture.wrapT = THREE.RepeatWrapping;  // This doesn't seem to work;
 			texture.wrapS = THREE.RepeatWrapping;  // This doesn't seem to work;
 
-			texture.repeat.set( 50, 3 );
+			texture.repeat.set( 50, 2 );
 			
 //			var plane = new THREE.Mesh( new THREE.PlaneGeometry( 500, 10 ), new THREE.MeshPhongMaterial( { color : 0x808080 } ) );
 
-			var plane = new THREE.Mesh( new THREE.PlaneGeometry( 500, 30 ), new THREE.MeshPhongMaterial( { map : texture } ) );
+			var plane = new THREE.Mesh( new THREE.PlaneGeometry( 500, 20 ), new THREE.MeshPhongMaterial( { map : texture } ) );
 			
 			plane.position.x -= 250;
 			
@@ -115,20 +115,11 @@
 
 			scene.add( plane );			
 			
-			var ambientLight = new THREE.AmbientLight( 0x305070 );
+			var ambientLight = new THREE.AmbientLight( 0x302010 );
 			
 			scene.add( ambientLight );
 
-			var directionalLight = new THREE.DirectionalLight( 0xff8020, 1 );
-
-			directionalLight.position.set( 1, 1, 1 ).normalize( );
-
-			directionalLight.castShadow = true;
-
-			scene.add( directionalLight );
-
-
-			var light = new THREE.PointLight( 0xe0c0a0, 3 );
+			var light = new THREE.PointLight( 0xffffff, 1 );
 
 			light.position.set( 0, 100, 0 );
 
