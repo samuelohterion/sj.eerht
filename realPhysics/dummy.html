@@ -1,0 +1,47 @@
+<script>
+
+	function A( pName ) {
+	
+		this.name = pName;
+		
+		this.print = function ( ) {
+		
+			return this.name;						
+		}
+	}
+
+	A.prototype.zahl = 6;
+	
+	A.prototype.write = function ( ) {
+	
+		return this.name;						
+	}
+
+	function B( pName, pId ) {
+	
+		this.id = pId;
+		
+		this.prototype = new A( pName );
+
+		this.prototype.constructor = B;
+
+		this.print = function ( ) {
+		
+			return this.prototype.print( ) + "[ " + this.id + " ]";						
+		}
+	}
+
+	B.prototype.write = function ( ) {
+	
+		return this.prototype.write( ) + "( " + this.id + " )";						
+	}
+	
+	var a = new A( "a" );
+	var b = new B( "b", 2 );
+	
+	alert( a.print( ) );
+	alert( b.print( ) );
+	alert( a.write( ) );
+	alert( b.write( ) );
+	
+</script>

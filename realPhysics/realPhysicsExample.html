@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<script src="https://threejs.org/build/three.js" type="text/javascript">
+		</script>
+		<script src="https://threejs.org/examples/js/controls/OrbitControls.js" type="text/javascript">
+		</script>
+		<script src="realPhysics.js" type="text/javascript">
+		</script>
+		<button id="btn" onclick="onClick( );">
+			start
+		</button>
+	</head>
+	<body>
+		<script type="text/javascript">
+		
+			var run = false;
+			
+			var tm = ( new Date ( ) ).getTime ( );
+
+			var then = ( new Date ( ) ).getTime ( ) - tm;
+
+			var now  = ( new Date ( ) ).getTime ( ) - tm;
+		
+			var camera = new THREE.PerspectiveCamera ( 60, window.innerWidth / window.innerHeight, .2, 1000 );
+			
+			camera.position.set ( 0., 50., 100. );
+			
+			camera.up = new THREE.Vector3( 0, 1, 0 );
+			
+			camera.lookAt( new THREE.Vector3( 0, 0, 0 ) );
+				
+			var scene = new THREE.Scene( );
+			
+			var renderer = new THREE.WebGLRenderer( );
+
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			
+			document.body.appendChild( renderer.domElement );
+			
+			var oCtl = new THREE.OrbitControls( camera );
+
+			oCtl.addEventListener( 'change', render );
+
+			var planeTx = THREE.ImageUtils.loadTexture( '../pix/checkerboard.jpg' );
+					
+			planeTx.wrapT = THREE.RepeatWrapping;
+			planeTx.wrapS = THREE.RepeatWrapping;
+			planeTx.repeat.set( 10, 10 );
+			
+			var plane = new THREE.Mesh( new THREE.PlaneGeometry( 100, 100 ), new THREE.MeshBasicMaterial( { map : planeTx, color : 0x403010 } ) );
+			
+			plane.rotation.x = -.5 * Math.PI;  // Not sure what this number represents.
+
+			plane.doubleSided = true;
+
+			scene.add( plane );
+			
+			var sphereGm = new THREE.SphereGeometry( 10, 32, 32 );
+			
+			var sphereTx = THREE.ImageUtils.loadTexture( '../pix/colors.png' );
+					
+			sphereTx.wrapT = THREE.RepeatWrapping;
+			sphereTx.wrapS = THREE.RepeatWrapping;
+			sphereTx.repeat.set( 1, 1 );
+			
+			var sphere = new THREE.Mesh( sphereGm, new THREE.MeshBasicMaterial( { map : sphereTx } ) );
+			sphere.position.set( 0., 10, 0. );
+			scene.add( sphere );			
+
+			var spherePhysics = new PhysicalWrapper( sphere );
+			
+			var then = ( new Date( ) ).getTime( ) - tm;
+			
+			function animate( ) {
+				
+				if( !run )
+			
+					return;
+					
+				var dt = 1e-3 * ( then - now );
+				
+				then = now;
+			
+				spherePhysics.accl( dt );
+
+				spherePhysics.move( dt );
+	
+				requestAnimationFrame( animate );
+				
+				render( );
+				
+			}
+			
+			function render( ) {
+						
+				var now = ( new Date( ) ).getTime( ) - tm;			
+			
+				var dt = .001 * ( now - then );
+			
+				then = now;
+			
+				if( 1. < dt || dt < 1. / 120. )
+				
+					return;				
+
+				oCtl.update( );
+
+				renderer.render( scene, camera );
+			}
+		
+			function onClick( ) {
+				
+				if( run ) {
+				
+					run = false;
+					
+					document.getElementById( "btn" ).innerHTML = "start simulation";					
+					
+					return;
+				}
+				
+				tm = ( new Date ( ) ).getTime ( );
+				
+				spherePhysics.initPhysics( 
+				
+					new THREE.Vector3( 0, 50, 0 ),
+					new THREE.Vector3( 0, 0, 0 ),
+					new THREE.Vector3( 0, 0, 0 ),
+					new THREE.Vector3( 0, 0, 0 ),
+					new THREE.Vector3( 0, 0, 0 ),
+					new THREE.Vector3( 0, 0, 0 ),
+					new THREE.Matrix4( ) // identity by default
+				);
+				
+				run = true;
+				
+				document.getElementById( "btn" ).innerHTML = "stop simulation";					
+
+				animate( );
+			}
+
+		</script>
+    </body>
+</html>
