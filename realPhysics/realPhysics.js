@@ -1,53 +1,68 @@
-var running = false;
+(var running = false;
 
 var then = ( new Date( ) ).getTime( );
 
-function PhysicalWrapper( object, mass, momentOfInertia ) {
+var PhysicalWrapper = function ( object ) { 
 
 	this.obj   = object;
 	this.mss   = 1.;  
-	this.moi   = 2. / 3. ;  
+	this.moi   = new THREE.Matrix3( );  
 	this.vel   = new THREE.Vector3( 0, 0, 0 );
 	this.acc   = new THREE.Vector3( 0, 0, 0 );
 	this.phi   = new THREE.Vector3( 0, 0, 0 );
 	this.dphi  = new THREE.Vector3( 0, 0, 0 );
 	this.ddphi = new THREE.Vector3( 0, 0, 0 );
+}
 
-	this.initPhysics = function( pos, vel, acc, phi, dphi, ddphi, coordSystem ) {
+PhysicalWrapper.prototype = {
+	
+	constructor : function ( object ) { 
+	
+		PhysicalWrapper.call( this, object );		
+	},
+							
+	initPhysics : function ( mass, momentOfInertia, pos, vel, acc, phi, dphi, ddphi ) {
 
-		this.obj.matrix.copy( coordSystem );
+		this.mss = mass;  
+		this.moi = new THREE.Matrix3( );  
 		this.obj.position.copy( pos );
 		this.vel.copy( vel );
 		this.acc.copy( acc );
 		this.phi.copy( phi );
 		this.dphi.copy( dphi );
 		this.ddphi.copy( ddphi );
-	
+
 		if ( .001 < this.phi.dot( this.phi ) ) {
 			
 			rotateAroundWorldAxis( this.obj, this.phi, this.phi.length( ) );
 		}
-	}
+	},
+	
+	accl        : function ( dt ) {
 
-	this.accl  = function ( dt ) {
-		
 		this.acc = new THREE.Vector3( 0., -9.81, 0. );
-	}
-
-	this.move  = function ( dt ) {
-		
+	},
+	
+	move        : function ( dt ) {
+	
 		var
-		dpos = this.vel.clone( ).multiplyScalar( dt ),
-		dvel = this.acc.clone( ).multiplyScalar( dt );
-
-		this.obj.position.add( dpos );
-//		this.obj.matrix.setPosition( dpos );
-		this.vel.add( dvel );
+		dpos = this.prototype.clone( ).multiplyScalar( dt ),
+		dvel = this.prototype.acc.clone( ).multiplyScalar( dt );
+	
+		this.prototype.obj.position.add( dpos );
+	//		this.obj.matrix.setPosition( dpos );
+		this.prototype.vel.add( dvel );	
 	}
 }
 
+PWSphere = function ( ) { }
 
-function rotateAroundWorldAxis( object, axis, radians ) {
+PWSphere.prototype = {
+
+	constructor : PhysicalWrapper
+}
+	
+rotateAroundWorldAxis = function ( object, axis, radians ) {
 
     var rotationMatrix = new THREE.Matrix4( );
 
@@ -56,3 +71,4 @@ function rotateAroundWorldAxis( object, axis, radians ) {
     object.matrix = rotationMatrix;
     object.rotation.setEulerFromRotationMatrix( object.matrix );
 }
+)

@@ -5,7 +5,7 @@
 		</script>
 		<script src="https://threejs.org/examples/js/controls/OrbitControls.js" type="text/javascript">
 		</script>
-		<script src="realPhysics.js" type="text/javascript">
+		<script src="realPhysics.js">
 		</script>
 		<button id="btn" onclick="onClick( );">
 			start
@@ -68,7 +68,7 @@
 			sphere.position.set( 0., 10, 0. );
 			scene.add( sphere );			
 
-			var spherePhysics = new PhysicalWrapper( sphere );
+			var spherePhysics = new PWSphere( sphere );
 			
 			var then = ( new Date( ) ).getTime( ) - tm;
 			
