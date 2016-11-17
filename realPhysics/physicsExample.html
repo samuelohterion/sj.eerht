@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+
+		<meta charset="utf-8" />
+
+		<title>Collision</title>
+
+		<style type="text/css">
+		
+		</style>
+
+		<script src="https://threejs.org/build/three.js" type="text/javascript"></script>
+
+		<script src="https://threejs.org/examples/js/controls/OrbitControls.js" type="text/javascript"></script>
+
+	</head>
+
+	<body>
+
+		<button id="startStop" onclick="startStop( );">start simulaion</button>
+		
+		<button id="reset" onclick="reset( );">reset</button>
+		
+		<script src="physics.js" type="text/javascript"></script>
+
+		<script type="text/javascript">
+		
+			var
+			btnStartStop = document.getElementById( "startStop" );		
+		
+			var
+			run  = false,
+			tm   = ( new Date ( ) ).getTime ( ),
+			then = ( new Date ( ) ).getTime ( ) - tm,
+			now  = ( new Date ( ) ).getTime ( ) - tm;
+			
+			var			
+			cmr  = new THREE.PerspectiveCamera ( 60, window.innerWidth / window.innerHeight, .2, 1000 );
+			cmr.position.set ( 0., 50., 100. );
+			cmr.up.set( 0, 1, 0 );
+			cmr.lookAt( new THREE.Vector3( 0, 0, 0 ) );
+				
+			var
+			rndr = new THREE.WebGLRenderer( );
+			rndr.setSize( window.innerWidth, window.innerHeight );
+			rndr.shadowMap.enabled = true;
+			rndr.shadowMapType = THREE.PCFSoftShadowMap;
+			document.body.appendChild( rndr.domElement );
+			
+			var
+			oCtl = new THREE.OrbitControls( cmr );
+			oCtl.addEventListener( 'change', render );
+
+			var
+			scn = new THREE.Scene( );
+			
+			var
+			lta = new THREE.AmbientLight( 0x404040, 2 ),
+			lgt = new THREE.PointLight( 0xffffff, 20, 150. ),
+			lth = new THREE.PointLightHelper( lgt, 10 );
+			lgt.position.set( 0, 100, 0 );
+			lgt.castShadow = true;
+			lgt.shadowDarkness = .5;
+			scn.add( lta );
+			scn.add( lgt );
+			scn.add( lth );
+			
+			var
+			txL    = new THREE.TextureLoader ( ),
+			sphTx  = txL.load ( '../pix/colors.png' ),
+			pln1Tx  = txL.load ( '../pix/checkerboard.jpg' ),
+			pln2Tx  = txL.load ( '../pix/checkerboard.jpg' );
+			
+			sphTx.wrapT = THREE.RepeatWrapping;
+			sphTx.wrapS = THREE.RepeatWrapping;
+			sphTx.repeat.set ( 1, 1 );
+			
+			pln1Tx.wrapT = THREE.RepeatWrapping;
+			pln1Tx.wrapS = THREE.RepeatWrapping;
+			pln1Tx.repeat.set ( 10, 10 );
+
+			pln2Tx.wrapT = THREE.RepeatWrapping;
+			pln2Tx.wrapS = THREE.RepeatWrapping;
+			pln2Tx.repeat.set ( 10, 5 );
+
+			var
+			pln1Mt  = new THREE.MeshLambertMaterial ( { map: pln1Tx, color: 0x809080 } ),
+			pln2Mt  = new THREE.MeshLambertMaterial ( { map: pln2Tx, color: 0x908080 } ),
+			sphMt  = new THREE.MeshStandardMaterial ( { map: sphTx, color: 0x202020, roughness: 0.2, metalness: .5 } ),
+			pln1Gm = new THREE.PlaneGeometry ( 100, 100 ),			
+			pln2Gm = new THREE.PlaneGeometry ( 100, 50 ),			
+			pln3Gm = new THREE.PlaneGeometry ( 25, 25 ),			
+			sph1Gm = new THREE.SphereGeometry ( 1, 32, 32 ),			
+			sph2Gm = new THREE.SphereGeometry ( 2, 32, 32 ),			
+			sph3Gm = new THREE.SphereGeometry ( 3, 32, 32 ),			
+			sph4Gm = new THREE.SphereGeometry ( 4, 32, 32 ),			
+			sph5Gm = new THREE.SphereGeometry ( 5, 32, 32 );			
+
+			var 
+			pln1 = new THREE.Mesh ( pln1Gm, pln1Mt ),
+			pln2 = new THREE.Mesh ( pln2Gm, pln2Mt ),
+			pln3 = new THREE.Mesh ( pln2Gm, pln2Mt ),
+			pln4 = new THREE.Mesh ( pln2Gm, pln2Mt ),
+			pln5 = new THREE.Mesh ( pln2Gm, pln2Mt ),
+			pln6 = new THREE.Mesh ( pln3Gm, pln1Mt );
+			
+			pln1.receiveShadow = true;			
+			pln2.receiveShadow = true;			
+			pln3.receiveShadow = true;			
+			pln4.receiveShadow = true;			
+			pln5.receiveShadow = true;			
+			pln6.receiveShadow = true;			
+			pln6.castShadow = true;			
+			//pln.rotation.x = -.5 * Math.PI;  // Not sure what this number represents.
+			rotateAroundWorldAxis ( pln1, new THREE.Vector3( 1, 0, 0 ), -0.5 * Math.PI );
+			//rotateAroundWorldAxis ( pln1, new THREE.Vector3( 1., 1., 0. ), +0.00 * Math.PI );
+			rotateAroundWorldAxis ( pln3, new THREE.Vector3( 0., 1., 0. ), +0.50 * Math.PI );
+			rotateAroundWorldAxis ( pln4, new THREE.Vector3( 0., 1., 0. ), +1.00 * Math.PI );
+			rotateAroundWorldAxis ( pln5, new THREE.Vector3( 0., 1., 0. ), +1.50 * Math.PI );
+			rotateAroundWorldAxis ( pln6, new THREE.Vector3( 1., 0., 0. ), -0.50 * Math.PI );
+			
+			pln2.position.set (   0., 25., -50. );
+			pln3.position.set ( -50., 25.,   0. );
+			pln4.position.set (   0., 25., +50. );
+			pln5.position.set ( +50., 25.,   0. );
+			pln6.position.set (   0., 15.,   0. );
+
+
+			pln1.material.side = THREE.FrontSide;
+			pln2.material.side = THREE.FrontSide;
+			pln3.material.side = THREE.FrontSide;
+			pln4.material.side = THREE.FrontSide;
+			pln5.material.side = THREE.FrontSide;
+			pln6.material.side = THREE.FrontSide;
+			
+			/*pln1.doubleSided = true;
+			pln2.doubleSided = true;
+			pln3.doubleSided = true;
+			pln4.doubleSided = true;
+			pln5.doubleSided = true;
+			pln6.doubleSided = true;
+			*/
+			scn.add ( pln1 );
+			scn.add ( pln2 );
+			scn.add ( pln3 );
+			scn.add ( pln4 );
+			scn.add ( pln5 );
+//			scn.add ( pln6 );
+			
+			var
+			sph1 = new THREE.Mesh ( sph1Gm, sphMt ),
+			sph2 = new THREE.Mesh ( sph2Gm, sphMt ),
+			sph3 = new THREE.Mesh ( sph3Gm, sphMt ),
+			sph4 = new THREE.Mesh ( sph4Gm, sphMt ),
+			sph5 = new THREE.Mesh ( sph5Gm, sphMt );
+
+			sph1.castShadow = true;
+			sph2.castShadow = true;
+			sph3.castShadow = true;
+			sph4.castShadow = true;
+			sph5.castShadow = true;
+						
+			sph1.receiveShadow = true;
+			sph2.receiveShadow = true;
+			sph3.receiveShadow = true;
+			sph4.receiveShadow = true;
+			sph5.receiveShadow = true;
+						
+			scn.add ( sph1 );
+			scn.add ( sph2 );
+			scn.add ( sph3 );
+			scn.add ( sph4 );
+			scn.add ( sph5 );
+			
+			var
+			physics = new Physics ( );
+			
+			physics.add ( pln1, 1e9, 1e9, false );
+			physics.add ( pln2, 1e9, 1e9, false );
+			physics.add ( pln3, 1e9, 1e9, false );
+			physics.add ( pln4, 1e9, 1e9, false );
+			physics.add ( pln5, 1e9, 1e9, false );
+//			physics.add ( pln6, 1e9, 1e9, false );
+			physics.add ( sph1, 1., 1., true );
+			physics.add ( sph2, 8., 8., true );
+			physics.add ( sph3, 27., 27., true );
+			physics.add ( sph4, 64., 64., true );
+			physics.add ( sph5, 125., 125., true );
+
+			reset( );
+			
+			function animate ( ) {
+				
+				if ( !run )
+			
+					return;
+					
+				requestAnimationFrame ( animate );
+
+				now  = ( new Date ( ) ).getTime ( ) - tm;
+				
+				var
+				dt = 1e-3 * ( now - then );
+				
+				then = now;		
+				
+				if( 1. < dt || dt < 1. / 120. )
+				
+					return;
+					
+				render ( );
+				
+				for( var i = 0; i < 10; ++ i) 
+				
+					physics.work ( .1 * dt );				
+
+			}
+			
+			function render ( ) {
+						
+				rndr.render ( scn, cmr );
+			}
+		
+			function reset( ) {
+			
+				sph1.position.set ( -25, 50, -25 );
+				sph2.position.set ( -25, 50, +25 );
+				sph3.position.set ( +25, 50, +25 );
+				sph4.position.set ( +25, 50, -25 );
+				sph5.position.set (   0, 50,   0 );
+				
+				for ( var i = 0; i < physics.objs.length; ++i )
+				
+					physics.objs[ i ].vel.set( -5. * physics.objs[ i ].mesh.position.x, 0, -5. * physics.objs[ i ].mesh.position.z + 5. * Math.random( ) - 2.5 );
+					
+				tm   = ( new Date ( ) ).getTime ( );
+				then = ( new Date ( ) ).getTime ( ) - tm;
+				now  = ( new Date ( ) ).getTime ( ) - tm;
+
+				requestAnimationFrame ( render );
+			}
+			
+			function startStop ( ) {
+				
+				if( run ) {
+							
+					run = false;
+				
+					btnStartStop.innerHTML = "start simulation";					
+					
+					return;
+				}
+				
+				tm = ( new Date ( ) ).getTime ( );
+				
+				run = true;
+				
+				btnStartStop.innerHTML = "stop simulation";					
+
+				animate ( );
+			}
+			
+		</script>
+
+	</body>
+
+</html>
