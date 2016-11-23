@@ -115,6 +115,7 @@
 			pln6.castShadow = true;			
 			//pln.rotation.x = -.5 * Math.PI;  // Not sure what this number represents.
 			rotateAroundWorldAxis ( pln1, new THREE.Vector3( 1, 0, 0 ), -0.5 * Math.PI );
+			pln1.rotation.x = -.5 * Math.PI;
 			//rotateAroundWorldAxis ( pln1, new THREE.Vector3( 1., 1., 0. ), +0.00 * Math.PI );
 			rotateAroundWorldAxis ( pln3, new THREE.Vector3( 0., 1., 0. ), +0.50 * Math.PI );
 			rotateAroundWorldAxis ( pln4, new THREE.Vector3( 0., 1., 0. ), +1.00 * Math.PI );
@@ -212,9 +213,9 @@
 					
 				render ( );
 				
-				for( var i = 0; i < 10; ++ i) 
+				for( var i = 0; i < 100; ++ i) 
 				
-					physics.work ( .1 * dt );				
+					physics.work ( .01 * dt );				
 
 			}
 			

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+
+		<meta charset="utf-8" />
+
+		<title>Checkerboard</title>
+
+		<style type="text/css">
+		
+		</style>
+
+		<script src="https://threejs.org/build/three.js" type="text/javascript"></script>
+
+		<script src="https://threejs.org/examples/js/controls/OrbitControls.js" type="text/javascript"></script>
+
+	</head>
+
+	<body>
+	
+		<button id="startStop" onclick="startStop( );">start simulaion</button>
+		
+		<button id="reset" onclick="reset( );">reset</button>
+
+		<script type="text/javascript">
+		
+			var
+			btnStartStop = document.getElementById( "startStop" );		
+		
+			var
+			run  = false,
+			tm   = ( new Date ( ) ).getTime ( ),
+			then = ( new Date ( ) ).getTime ( ) - tm,
+			now  = ( new Date ( ) ).getTime ( ) - tm;
+			
+			var			
+			cmr  = new THREE.PerspectiveCamera ( 60, window.innerWidth / window.innerHeight, .2, 1000 );
+			cmr.position.set ( 0., 50., 100. );
+			cmr.up.set( 0, 1, 0 );
+			cmr.lookAt( new THREE.Vector3( 0, 0, 0 ) );
+				
+			var
+			rndr = new THREE.WebGLRenderer( );
+			rndr.setSize( window.innerWidth, window.innerHeight );
+			rndr.shadowMap.enabled = true;
+			rndr.shadowMapType = THREE.PCFSoftShadowMap;
+			document.body.appendChild( rndr.domElement );
+			
+			var
+			oCtl = new THREE.OrbitControls( cmr );
+			oCtl.addEventListener( 'change', render );
+
+			var
+			scn = new THREE.Scene( );
+			
+			var
+			lta = new THREE.AmbientLight( 0x404040, 2 ),
+			lgt = new THREE.PointLight( 0xffffff, 10, 1300. ),
+			lth = new THREE.PointLightHelper( lgt, 10 );
+			lgt.position.set( 0, 1000, 0 );
+			lgt.castShadow = true;
+			
+			//lgt.shadowDarkness = .5;
+			scn.add( lta );
+			scn.add( lgt );
+			scn.add( lth );
+			
+			var
+			objGm = new THREE.Geometry ( );
+			var
+			wt = 100,
+			wh = wt / 2,
+			f  = 10;
+			
+			for ( var i = 0; i < wt; ++i ) {
+
+				for ( var j = 0; j < wt; ++j ) {
+
+					for ( var x = 0; x < 2; ++x ) {
+				
+						for ( var z = 0; z < 2; ++z ) {
+					
+							objGm.vertices.push ( new THREE.Vector3 ( f * ( i + x - wh ), 0, f * ( j + z - wh ) ) );
+						}
+					}
+			
+					var
+					vi = objGm.vertices.length - 4;
+					
+					fc = new THREE.Face3 ( vi + 0, vi + 1, vi + 3 );
+					fc.color = new THREE.Color ( ( i + j ) % 2 == 0 ? 0xffe0c0 : 0x102030 );
+					fc.normal = new THREE.Vector3 ( 0, 1, 0 );
+					objGm.faces.push ( fc );			
+
+					fc = new THREE.Face3 ( vi + 3, vi + 2, vi + 0 );
+					fc.color = new THREE.Color ( ( i + j ) % 2 == 0 ? 0xffe0c0 : 0x102030 );
+					fc.normal = new THREE.Vector3 ( 0, 1, 0 );
+					objGm.faces.push ( fc );			
+				}
+			}
+			
+			var
+			objMt = new THREE.MeshPhongMaterial ( { vertexColors: THREE.FaceColors } ),
+			obj   = new THREE.Mesh ( objGm, objMt );
+					
+			scn.add ( obj );
+
+			reset( );
+			
+			function animate ( ) {
+				
+				if ( !run )
+			
+					return;
+					
+				requestAnimationFrame ( animate );
+
+				now  = ( new Date ( ) ).getTime ( ) - tm;
+				
+				var
+				dt = 1e-3 * ( now - then );
+				
+				then = now;		
+				
+				if( 1. < dt || dt < 1. / 120. )
+				
+					return;
+					
+				var
+				id = 0,
+				vs = objGm.vertices,
+				fc = objGm.faces;
+						
+				objGm.verticesNeedUpdate = true;
+				objGm.normalsNeedUpdate = true;
+//				objGm.dynamic = true;
+
+				for ( var i = 0; i < wt; ++i ) {
+	
+					for ( var j = 0; j < wt; ++j ) {
+	
+						for ( var x = 0; x < 2; ++x ) {
+					
+							for ( var z = 0; z < 2; ++z ) {
+							
+								vs[ id++ ].y = 15. * Math.sin ( ( ( .001 * now ) + .002 * ( ( i + x ) * ( i + x ) + ( j + z ) * ( j + z ) ) ) );
+							}
+						}
+					}
+				}
+					
+				render ( );
+			}
+			
+			function render ( ) {
+						
+				rndr.render ( scn, cmr );
+			}
+		
+			function reset( ) {
+			
+				tm   = ( new Date ( ) ).getTime ( );
+				then = ( new Date ( ) ).getTime ( ) - tm;
+				now  = ( new Date ( ) ).getTime ( ) - tm;
+
+				requestAnimationFrame ( render );
+			}
+			
+			function startStop ( ) {
+				
+				if( run ) {
+							
+					run = false;
+				
+					btnStartStop.innerHTML = "start simulation";					
+					
+					return;
+				}
+				
+				tm = ( new Date ( ) ).getTime ( );
+				
+				run = true;
+				
+				btnStartStop.innerHTML = "stop simulation";					
+
+				animate ( );
+			}
+			
+			animate ( );
+		</script>
+		
+	</body>
+
+</html>

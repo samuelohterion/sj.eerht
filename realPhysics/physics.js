@@ -34,25 +34,27 @@ function mat4TimesVec3( pM4, pV3 ) {
 
 fixCollisionBetween = {
 	
-	frN : .55,
+	frN : .95,
 	frT : .999, 
 
-	reflect: function ( pM1, pV1, pMobile1, pM2, pV2, pMobile2, pN ) {
+	reflect: function ( pO1, pMobile1, pO2, pMobile2, pN, dt ) {
 		
-		this.refl = function ( pM, pV, pN  ) {
+		this.refl = function ( pObj, pN, dt ) {
 
 			var
-			vN   = prjAOnB( pV, pN ),
-			vT   = pV.clone ( ).sub ( vN );
+			vN   = prjAOnB( pObj.vel, pN ),
+			vT   = pObj.vel.clone ( ).sub ( vN );
 			
-			pV.copy ( vT.multiplyScalar( this.frT ).sub( vN.multiplyScalar( this.frN ) ) );
+			pObj.mesh.position.sub (  vN.multiplyScalar ( 2. * dt ) );
+
+			pObj.vel.copy ( vT.multiplyScalar( this.frT ).sub( vN.multiplyScalar( this.frN ) ) );
 		}
 		
 		if ( !pMobile1 ) {
 			
 			if ( pMobile2 )
 			
-				this.refl( pM2, pV2, pN );
+				this.refl( pO2, pN, dt );
 			
 			return;
 		
@@ -60,48 +62,54 @@ fixCollisionBetween = {
 		
 		if ( !pMobile2 ) {
 			
-			this.refl( pM1, pV1, pN );
+			this.refl( pO1, pN, dt );
 			
 			return;
 		}
 		
 		var
-		v1N   = prjAOnB( pV1, pN ),
-		v2N   = prjAOnB( pV2, pN ),
-		v1T   = ( pV1.clone ( ).sub ( v1N ) ).multiplyScalar ( this.frT ),
-		v2T   = ( pV2.clone ( ).sub ( v2N ) ).multiplyScalar ( this.frT ),
-		mT    = 1. / ( pM1 + pM2 ),
-		mD    = pM2 - pM1,
-		v1    = v1N.clone ( ).multiplyScalar ( -this.frN * mD * mT ).add ( v2N.clone ( ).multiplyScalar ( 2. * this.frN * pM2 * mT ) ),
-		v2    = v2N.clone ( ).multiplyScalar ( +this.frN * mD * mT ).add ( v1N.clone ( ).multiplyScalar ( 2. * this.frN * pM1 * mT ) );
+		v1N   = prjAOnB( pO1.vel, pN ),
+		v2N   = prjAOnB( pO2.vel, pN ),
+		v1T   = ( pO1.vel.clone ( ).sub ( v1N ) ).multiplyScalar ( this.frT ),
+		v2T   = ( pO2.vel.clone ( ).sub ( v2N ) ).multiplyScalar ( this.frT ),
+		mT    = 1. / ( pO1.mass + pO2.mass ),
+		mD    = pO2.mass - pO1.mass,
+		v1    = v1N.clone ( ).multiplyScalar ( -this.frN * mD * mT ).add ( v2N.clone ( ).multiplyScalar ( 2. * this.frN * pO2.mass * mT ) ),
+		v2    = v2N.clone ( ).multiplyScalar ( +this.frN * mD * mT ).add ( v1N.clone ( ).multiplyScalar ( 2. * this.frN * pO1.mass * mT ) );
 		
-		pV1.copy ( v1T.add( v1 ) );
-		pV2.copy ( v2T.add( v2 ) );
+		pO1.mesh.position.sub (  pO1.vel.clone( ).multiplyScalar ( 2. * dt ) );
+		pO2.mesh.position.sub (  pO2.vel.clone( ).multiplyScalar ( 2. * dt ) );
+
+		pO1.vel.copy ( v1T.add( v1 ) );
+		pO2.vel.copy ( v2T.add( v2 ) );
 	},
 
-	sphereAndSphere: function ( pS1, pMobile1, pS2, pMobile2 ) {
+	sphereAndSphere: function ( pS1, pMobile1, pS2, pMobile2, dt ) {
 		
 		var
-		r  = pS2.mesh.position.clone ( ).sub( pS1.mesh.position ),
-		d2 = r.dot ( r ),
-		m  = pS1.radius + pS2.radius,
-		m2 = m * m;
+		dist = pS2.mesh.position.clone ( ).sub( pS1.mesh.position ),
+		n    = dist.clone( ).normalize( ),
+		d2   = dist.dot ( dist ),
+		r    = pS1.radius + pS2.radius,
+		r2   = r * r;
 		
-		if ( m2 < d2 ) return;
+		if ( r2 < d2 ) return false;
 		
 		var
-		d1 = pS1.vel.dot ( r ),
-		d2 = pS2.vel.dot ( r );		
+		dS1 = pS1.vel.dot ( n ),
+		dS2 = pS2.vel.dot ( n );		
 		
 //		pMobile1 &= d1 < 0;
 //		pMobile2 &= 0 < d2;
 
-		if ( d1 - d2 < 0 ) return;
+		if ( dS1 - dS2 < 0 ) return false;
 		
-		this.reflect( pS1.mass, pS1.vel, pMobile1, pS2.mass, pS2.vel, pMobile2, r.normalize( ) );		  		
+		this.reflect( pS1, pMobile1, pS2, pMobile2, n, dt );		  		
+
+		return true;
 	},
 	
-	sphereAndPlane: function ( pS, pMobile1, pP, pMobile2 ) {
+	sphereAndPlane: function ( pS, pMobile1, pP, pMobile2, dt ) {
 
 		var
 		r = pS.mesh.position.clone ( ).sub ( pP.mesh.position ),
@@ -109,43 +117,50 @@ fixCollisionBetween = {
 		d = n.dot ( r ),
 		m = pS.radius;
 		
-		if ( m < d ) return;
+		if ( m < d ) return false;
 		
 		var
 		d1 = pP.vel.dot ( n ),
-		d2 = pS.vel.dot ( n );		
+		d2 = pS.vel.dot ( n ),
+		d3 = m - d;		
 		
 //		pMobile1 &= 0 < d1;
 //		pMobile2 &= d2 < 0;
 			
-		if ( d1 - d2 < 0 ) return;
+		if ( d1 - d2 < 0 ) return false;
 
-		this.reflect( pS.mass, pS.vel, pMobile1, pP.mass, pP.vel, pMobile2, n );		  		
+		this.reflect( pS, pMobile1, pP, pMobile2, n, dt );
+
+		return true;
 	},
 	
-	planeAndPlane: function ( p1, pMobile1, p2, pMobile2 ) {
+	planeAndPlane: function ( p1, pMobile1, p2, pMobile2, dt ) {
+		
+		return false;
 	},
 
-	objAndObj: function ( pO1, pMobile1, pO2, pMobile2 ) {
+	objAndObj: function ( pO1, pMobile1, pO2, pMobile2, dt ) {
 	
 		if ( pO1.mesh.geometry.type == "PlaneGeometry" )
 
 			if ( pO2.mesh.geometry.type == "PlaneGeometry" )
 			
-				return this.planeAndPlane( pO1, pMobile1, pO2, pMobile2 );
+				return this.planeAndPlane( pO1, pMobile1, pO2, pMobile2, dt );
 
 			else 
 		
-				return this.sphereAndPlane( pO2, pMobile1, pO1, pMobile2 );
+				return this.sphereAndPlane( pO2, pMobile1, pO1, pMobile2, dt );
 		else 
 
 			if ( pO2.mesh.geometry.type == "PlaneGeometry" )
 			
-				return this.sphereAndPlane( pO1, pMobile1, pO2, pMobile2 );
+				return this.sphereAndPlane( pO1, pMobile1, pO2, pMobile2, dt );
 
 			else 
 		
-				return this.sphereAndSphere( pO1, pMobile1, pO2, pMobile2 );
+				return this.sphereAndSphere( pO1, pMobile1, pO2, pMobile2, dt );
+				
+		return false;
 	}	
 }
 /*
@@ -280,6 +295,9 @@ Physics.prototype.add = function ( pMesh, pMass, pMomentOfInertia, pNotAsEnviron
  	 	
 Physics.prototype.work = function ( dt ) {
  		
+ 	var
+ 	refl = [ ];	
+ 	
  	for ( var i = 0; i < this.objs.length; ++i )
 
 		this.objs[ i ].accl( dt ); 				
@@ -288,15 +306,24 @@ Physics.prototype.work = function ( dt ) {
 
 		this.objs[ i ].move( dt );
 		
-	for ( var i = 0; i < this.objs.length - 1; ++i )
+ 	for ( var i = 0; i < this.objs.length; ++i ) {
+
+		refl.push( false );
 		
 		for ( var j = i + 1; j < this.objs.length; ++j )
 			
-			fixCollisionBetween.objAndObj( this.objs[ i ], true, this.objs[ j ], true );
+			refl[ i ] |= fixCollisionBetween.objAndObj( this.objs[ i ], true, this.objs[ j ], true, dt );
 
-	for ( var i = 0; i < this.objs.length; ++i )
-		
 		for ( var j = 0; j < this.envm.length; ++j )
 		
-			fixCollisionBetween.objAndObj( this.objs[ i ], true, this.envm[ j ], false );
+			refl[ i ] |= fixCollisionBetween.objAndObj( this.objs[ i ], true, this.envm[ j ], false, dt );
+	}
+			
+ 	for ( var i = 0; i < this.objs.length; ++i )
+
+		if ( refl[ i ] ) {
+			
+			this.objs[ i ].mesh.position.add ( this.objs[ i ].vel.clone( ).multiplyScalar ( ( 2.01 - fixCollisionBetween.frN ) * dt ) );
+		}
+	
 }
