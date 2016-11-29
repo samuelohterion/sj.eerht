@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+	
+	<head>
+
+		<meta charset="utf-8">
+
+		<title>			
+			JSON Example
+		</title>
+
+		<script src="myData.js">
+		</script>
+		
+		<script src="JsoN.js">
+		</script>
+		
+		<script type="text/javascript">
+			
+			var
+			cJsoN = new JsoN ( myData );
+			
+			onKeyUp = function ( pEvent ) {
+
+				if ( pEvent.keyCode == 8 ) {
+
+					pEvent.cancelBubble = true;
+					pEvent.returnValue  = false;
+					
+					alert ( "Sie haben BACKSPACE gedrückt" );
+				}
+				
+				var
+				keyCode = pEvent.keyCode;
+				
+				switch ( keyCode ) {
+					
+					case 37 : {
+						
+						cJsoN.left ( ); 
+						break;
+					}
+					case 39 : {
+						
+						cJsoN.right ( );
+						break;
+					}
+					default : break;
+				}
+
+				document.write( cJsoN.getText( ) );
+			
+				return pEvent.returnValue;
+			}
+			
+		</script>
+		
+	</head>
+	
+	<body style="{ background:#a0b0c0 }">
+		
+		<script type="text/javascript">
+		
+			document.onkeyup = onKeyUp;
+			
+		</script>
+		
+	</body>
+
+</html>

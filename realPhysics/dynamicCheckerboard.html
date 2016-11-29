@@ -221,6 +221,7 @@
 						
 				objGm.verticesNeedUpdate = true;
 				objGm.normalsNeedUpdate = true;
+				objGm.colorsNeedUpdate = true;
 //				objGm.dynamic = true;
 
 				var
@@ -250,11 +251,11 @@
 //								if ( id & 4  ) {
 								if ( objGm.faces[ id >> 1 ].color.r < .5 ) {
 									
-									vs[ id ].y = 1e-1 * Math.sin( .00023 * now ) * ( wh * wh - fx + fz ) * Math.sin ( .002 * now + .002 * ( Math.sin( .000123 * now ) * fx + Math.cos( .000153 * now ) * fz ) );
+									vs[ id ].y = 1e-1 * Math.sin( .00023 * now ) * ( wh * wh - fx + fz ) * Math.sin ( .0032 * now + .0042 * ( Math.sin( .000123 * now ) * fx + Math.cos( .000153 * now ) * fz ) );
 								}
 								else {
 								
-									vs[ id ].y = 1e-1 * Math.cos( .00013 * now ) * ( wh * wh - fx + fz ) * Math.sin ( .002 * now + .002 * ( Math.sin( .000123 * now ) * fx + Math.cos( .000153 * now ) * fz ) );
+									vs[ id ].y = 1e-1 * Math.cos( .00013 * now ) * ( wh * wh - fx + fz ) * Math.sin ( .002 * now + .0027* ( Math.sin( .000153 * now ) * fx + Math.cos( .000159 * now ) * fz ) );
 								}
 								++id;
 							}
@@ -264,9 +265,10 @@
 					
 //				eightQueensPuzzle.work ( );
 
-				for( var i = 0; i < 100; ++i )
-					
-					paintDot ( );
+				var
+				i = parseInt( .05 * now );
+
+				paintDot ( i, .5 * ( 1. + Math.sin ( .001 * i ) ), .5 * ( 1. + Math.sin ( .01 * i ) ), .5 * ( 1. + Math.sin ( .00001 * i * i ) ) );
 
 				render ( );
 			}
@@ -320,14 +322,19 @@
 				animate ( );
 			}
 
-			function paintDot ( ) {
+//			function paintDot ( pX, pY, pC ) {
+			function paintDot ( idx, pR, pG, pB ) {
 			
-				var
-				idx = parseInt( objGm.faces.length * Math.random ( ) );			
+//				var
+//				idx = 2. * ( wt * pY + pX );			
 			
-				objGm.faces[ idx ].color.r = ( 10000. + 10000 * Math.sin( .01 * now ) / now ); 					
-				objGm.faces[ idx ].color.g = 0;					
-				objGm.faces[ idx ].color.b = 0;
+				objGm.faces[ idx ].color.r = pR; 					
+				objGm.faces[ idx ].color.g = pG;					
+				objGm.faces[ idx ].color.b = pB;
+
+				objGm.faces[ 1+idx ].color.r = pR; 					
+				objGm.faces[ 1+idx ].color.g = pG;					
+				objGm.faces[ 1+idx ].color.b = pB;
 			}
 								
 			

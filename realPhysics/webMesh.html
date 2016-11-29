@@ -58,6 +58,7 @@
 			lta = new THREE.AmbientLight( 0x404040, 2 ),
 			lgt = new THREE.PointLight( 0xffffff, 10, 1300. ),
 			lth = new THREE.PointLightHelper( lgt, 10 );
+			
 			lgt.position.set( 0, 1000, 0 );
 			lgt.castShadow = true;
 			
@@ -100,9 +101,7 @@
 
 				for ( var i = 0; i < wt; ++i ) {
 	
-					for ( var j = 0; j < wt; ++j ) {
-					
-						
+					for ( var j = 0; j < wt; ++j ) {						
 	
 						for ( var x = 0; x < 2; ++x ) {
 					
@@ -152,6 +151,7 @@
 			}
 			
 			animate ( );
+			
 		</script>
 		
 	</body>
