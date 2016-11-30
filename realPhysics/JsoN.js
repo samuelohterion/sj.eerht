@@ -7,11 +7,11 @@ Cnst = {
 };	
 function JsoN ( pData ) {
 	
-	this.Addr = function ( ) {
+	this.Addr = function ( pData ) {
 		
 		this.l = 0;
-		this.r = 0;
-		this.i = [ ];
+		this.r = pData.next.length - 1;
+		this.i = [ ( this.r + this.l ) >> 1 ];
 		this.gId = function ( ) { 
 			
 			return this.i[ this.i.length - 1 ]; 
@@ -60,17 +60,16 @@ function JsoN ( pData ) {
 	this.data = pData;
 	this.cDta;
 	this.addr;
-	this.cTxt;
-	this.reset = function ( ) {
+	this.newSearch = function ( ) {
 		
 		this.cDta = this.data;
-		this.addr = new this.Addr ( );
-		this.addr.newInterval( this.cDta.nxt.length );	
-		this.cTxt = '';
+		this.addr = new this.Addr ( this.cDta );
+	}
+	this.newPrint = function ( ) {
+		
+		this.cDta = this.data;
 	}
 	this.reset ( pData );
-	this.col = 0;
-	this.row = 0;
 }
 
 JsoN.prototype = {
@@ -104,7 +103,9 @@ JsoN.prototype = {
 			}
 		}
 	},
-	p_rint  : function ( pData, row, col ) {
+	_gtTlTxt_  : function ( pData, row, col, pLevelsLeft ) {
+		
+		if( --pLevelsLeft < 0 )	return;
 		
 		this.cTxt += "<br>" + "_".repeat( col ) + pData.val;
 		
@@ -114,15 +115,30 @@ JsoN.prototype = {
 		
 		for ( var i = 0; i < pData.nxt.length; ++i ) {
 
-			 ++row;
+			++row;
 
 			if ( pData.nxt[ i ] != null )
 			
-				this.p_rint( pData.nxt[ i ], row, col );
-		}		
+				this._gtTlTxt_ ( pData.nxt[ i ], row, col, pLevelsLeft );
+		}
+		
 		col -= 2;
 	},
-	getText : function ( ) {
+	getHeadText : function ( pIdArr ) {
+		
+		var 
+		txt = '',
+		dat = this.data;
+		
+		for ( var i = 0; i < pIdArr.length; ++i ) {
+			
+			txt += dat.val;
+			dat =  dat.nxt[ pIdArr[ i ] ];
+		}
+		
+		return txt;		
+	},
+	getTailText : function ( pLevelsLeft ) {
 		
 		this.cTxt = '';
 		 
@@ -130,8 +146,14 @@ JsoN.prototype = {
 		col = 0,
 		row = 0;
 		
-		this.p_rint ( this.cDta, row, col );
+		this._gtTlTxt_ ( this.cDta, row, col, pLevelsLeft );
 		
 		return this.cTxt;		
+	},
+	getHeadTailText : function ( pIdArr, pLevelsLeft ) {
+		
+		var
+		add = new JsoN.Addr ( );
+		txt = getHeadText ( )
 	}
 }

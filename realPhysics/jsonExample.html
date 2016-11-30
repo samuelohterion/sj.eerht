@@ -48,7 +48,9 @@
 					default : break;
 				}
 
-				document.write( cJsoN.getText( ) );
+				document.write( cJsoN.getHeadText( ) );
+				document.write( cJsoN.getTailText( 2 ) );
+				document.write( cJsoN.getHeadTailText( 2 ) );
 			
 				return pEvent.returnValue;
 			}
