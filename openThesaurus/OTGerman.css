@@ -1,0 +1,67 @@
+body {
+	margin           : 0px;
+	padding          : 0px;
+	text-align       : center;
+	color            : #a0a0a0;
+	background-color : #404040;
+    text-align       : center;
+	font-family      : monospace;
+	font-size        : 14px;
+	font-style       : normal;
+	font-variant     : normal;
+	font-weight      : 400;
+	line-height      : 20px;
+	white-space      : pre-line;
+}
+span {
+	background-color : #606060;
+    color            : #202020;
+	text-align       : center;
+	font-family      : monospace;
+	font-size        : 32px;
+	font-style       : normal;
+	font-variant     : normal;
+	font-weight      : 400;
+	line-height      : 40px;
+}
+span.lft {
+	background-color : #607080;
+	font-size        : 24px;
+	text-align       : right;
+}
+span.rgt {
+	background-color : #807060;
+	font-size        : 24px;
+	text-align       : left;
+}
+span.org {
+	background-color : #909090;
+	font-size        : 32px;
+	text-align       : center;
+}
+span.prv {
+	background-color : #708060;
+	font-size        : 20px;
+	text-align       : center;
+}
+input {
+	margin           : auto;
+	color            : #202020;
+	background-color : #606060;
+	font-family      : monospace;
+	font-size        : 16px;
+	font-style       : normal;
+	font-variant     : normal;
+	font-weight      : 400;
+	line-height      : 20px;
+	white-space      : pre-line;
+}
+table {
+	background-color : #585858;
+	width            : 80%;
+	margin           : auto;
+}
+td {
+	width            : 30%;
+	margin           : auto;
+}

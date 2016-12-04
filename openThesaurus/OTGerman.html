@@ -4,28 +4,51 @@
 		<style>
 		</style>
 		<meta charset="utf-8">
-		<link rel="stylesheet" type="text/css" href="binTree.css">
+		<link rel="stylesheet" type="text/css" href="OTGerman.css">
 		<script src="OpenThesaurus-Textversion/openthesaurus_german.js">
 		</script>
-		<script src="binTree.js">
+		<script src="OTGerman_BinTree.js">
 		</script>
 	</head>
 	<body>
 		<h1>
 			Use Arrow Keys!
 		</h1>
-		<span id="output">
-		</span>
-		<input id="input" onkeyup="keyUp ( event );">
-		</div>
-		<div id="found">
-		</div>
-		<div id="all">
-		</div>
-		<div id="arr">
-		</div>
-		<div id="allSorted">
-		</div>
+		<table>
+			<tr>
+				<td>
+				</td>
+				<td>
+					<span class="prv" id="outpPrv">
+					</span>
+				</td>
+				<td>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<span class="lft" id="outpLft">
+					</span>
+				</td>
+				<td>
+					<span class="org" id="outpOrg">
+					</span>
+				</td>
+				<td>
+					<span class="rgt" id="outpRgt">
+					</span>
+				</td>
+			</tr>
+			<tr>
+				<td>
+				</td>
+				<td>
+					<input id="input" onkeyup="keyUp ( event );">
+				</td>
+				<td>
+				</td>
+			</tr>
+		</table>
 		<script type="text/javascript">
 
 			var
@@ -41,7 +64,7 @@
 			bt.insert ( "Robert" );
 
 /*			var
-			f = bt.find( "god" );
+			f = bt.find( "Gott" );
 
 			document.getElementById ( "found" ).textContent = "depth: " + f.depth ( ) + "\n" + f.val + "\n";*/
 //			document.getElementById ( "all" ).textContent   = "depth: " + bt.depth ( ) + "\n" + bt.txt ( );
@@ -54,14 +77,15 @@
 
 				arrStr = arrStr + arr[ i ] + ", ";
 			}
-			document.getElementById ( "arr" ).textContent = "size: " + arr.length + "\n" + arrStr;
+//			document.getElementById ( "arr" ).textContent = "size: " + arr.length + "\n" + arrStr;
 
 			var
 			sbt = new BinTree ( );
 
 			sbt.fromArr( arr );
 
-			document.getElementById ( "allSorted" ).textContent = "depth: " + sbt.depth ( ) + "\n" + sbt.txt ( );
+
+//			document.getElementById ( "allSorted" ).textContent = "depth: " + sbt.depth ( ) + "\n" + sbt.txt ( );
 
 			var
 			addr = "";
@@ -73,7 +97,7 @@
 
    				switch ( c ) {
 
-					case 38 : {
+					case 37 : {
 
 						var
 						tmp = sbt.getByAddr ( addr );
@@ -84,12 +108,12 @@
 
 						break;
 					}
-					case 37 : {
+					case 38 : {
 
 						addr = addr.substr( 0, addr.length - 1 );
 						break;
 					}
-					case 40 : {
+					case 39 : {
 
 						var
 						tmp = sbt.getByAddr ( addr );
@@ -100,7 +124,7 @@
 
 						break;
 					}
-					case 38 : {
+					case 40 : {
 
 						addr = "";
 						break;
@@ -108,12 +132,16 @@
 				}
 
 				var
+				txtP = addr.length < 1 ? "?\¿/?" : sbt.getByAddr ( addr.substr ( 0, addr.length - 1 ) ).val,
 				ndM  = sbt.getByAddr ( addr ),
 				txtM = ndM ? ndM.val : "",
 				txtL = ndM && ndM.lft ? ndM.lft.val : "???",
 				txtR = ndM && ndM.rgt ? ndM.rgt.val : "¿¿¿";
 
-				document.getElementById ( "output" ).textContent = txtL + "\n" + txtM + "\n" + txtR;
+				document.getElementById ( "outpLft" ).textContent = txtL;
+				document.getElementById ( "outpPrv" ).textContent = txtP;
+				document.getElementById ( "outpOrg" ).textContent = txtM;
+				document.getElementById ( "outpRgt" ).textContent = txtR;
 				document.getElementById ( "input" ).value = addr;
 			}
 		</script>
