@@ -10,16 +10,16 @@
 		<script src="OTGerman_BinTree.js">
 		</script>
 	</head>
-	<body>
+	<body onkeyup="keyUp ( event );">
 		<h1>
-			Use Arrow Keys!
+			Use Arrow Keys or click in Table!
 		</h1>
 		<table>
 			<tr>
 				<td>
 				</td>
 				<td>
-					<span class="prv" id="outpPrv">
+					<span class="prv" id="outpPrv" onclick="goBack( );">
 					</span>
 				</td>
 				<td>
@@ -27,15 +27,15 @@
 			</tr>
 			<tr>
 				<td>
-					<span class="lft" id="outpLft">
+					<span class="lft" id="outpLft" onclick="goLeft( );">
 					</span>
 				</td>
 				<td>
-					<span class="org" id="outpOrg">
+					<span class="org" id="outpOrg"></span>
 					</span>
 				</td>
 				<td>
-					<span class="rgt" id="outpRgt">
+					<span class="rgt" id="outpRgt" onclick="goRight( );">
 					</span>
 				</td>
 			</tr>
@@ -43,7 +43,9 @@
 				<td>
 				</td>
 				<td>
-					<input id="input" onkeyup="keyUp ( event );">
+					<span id="outpAdd" class="outpAdd" onclick="goRoot( );">
+						out
+					</span>
 				</td>
 				<td>
 				</td>
@@ -90,6 +92,8 @@
 			var
 			addr = "";
 
+			update ( );
+
 			function keyUp ( event ) {
 
 				var
@@ -99,37 +103,28 @@
 
 					case 37 : {
 
-						var
-						tmp = sbt.getByAddr ( addr );
-
-						if ( tmp.lft )
-
-							addr += "0";
-
+						goLeft ( );
 						break;
 					}
 					case 38 : {
 
-						addr = addr.substr( 0, addr.length - 1 );
+						goBack ( );
 						break;
 					}
 					case 39 : {
 
-						var
-						tmp = sbt.getByAddr ( addr );
-
-						if ( tmp.rgt )
-
-							addr += "1";
-
+						goRight ( );
 						break;
 					}
 					case 40 : {
 
-						addr = "";
+						goRoot ( );
 						break;
 					}
 				}
+			}
+
+			function update ( ) {
 
 				var
 				txtP = addr.length < 1 ? "?\¿/?" : sbt.getByAddr ( addr.substr ( 0, addr.length - 1 ) ).val,
@@ -142,8 +137,45 @@
 				document.getElementById ( "outpPrv" ).textContent = txtP;
 				document.getElementById ( "outpOrg" ).textContent = txtM;
 				document.getElementById ( "outpRgt" ).textContent = txtR;
-				document.getElementById ( "input" ).value = addr;
+				document.getElementById ( "outpAdd" ).textContent   = addr;
 			}
+
+			function goRoot ( ) {
+
+				addr = "";
+				update ( );
+			}
+
+			function goBack ( ) {
+
+				if ( 0 < addr.length )
+
+					addr = addr.substr( 0, addr.length - 1 );
+				update ( );
+			}
+
+			function goLeft ( ) {
+
+				var
+				tmp = sbt.getByAddr ( addr );
+
+				if ( tmp.rgt )
+
+					addr += "0";
+				update ( );
+			}
+
+			function goRight ( ) {
+
+				var
+				tmp = sbt.getByAddr ( addr );
+
+				if ( tmp.rgt )
+
+					addr += "1";
+				update ( );
+			}
+
 		</script>
 	</body>
 </html>
