@@ -1,0 +1,145 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<style>
+		</style>
+		<meta charset="utf-8">
+		<link rel="stylesheet" type="text/css" href="binTree.css">
+		<script src="bible.js">
+		</script>
+		<script src="binTree.js">
+		</script>
+	</head>
+	<body>
+		<h1>
+			Use Arrow Keys!
+		</h1>
+		<input id="input" onkeyup="keyUp ( event );">
+		<span id="output">
+			Output
+		</span>
+		</div>
+		<div id="found">
+			found
+		</div>
+		<div id="all">
+			all
+		</div>
+		<div id="arr">
+			arr
+		</div>
+		<div id="allSorted">
+			allSorted
+		</div>
+		<script type="text/javascript">
+			
+			var
+			bt = new BinTree( );
+			bt.insert( "G" );
+			bt.insert( "D" );
+			bt.insert( "B" );
+			bt.insert( "A" );
+			bt.insert( "C" );
+			bt.insert( "F" );
+			bt.insert( "E" );
+			bt.insert( "H" );
+			bt.insert( "I" );
+			bt.insert( "P" );
+			bt.insert( "V" );
+			bt.insert( "S" );
+			bt.insert( "Q" );
+			bt.insert( "T" );
+			bt.insert( "R" );
+			bt.insert( "W" );
+			bt.insert( "X" );
+			bt.insert( "Z" );
+			bt.insert( "Y" );
+			bt.insert( "THOMAS" );
+			bt.insert( "thomas" );
+			bt.insert( "thomaS" );
+			bt.insert( "ThomaS" );
+			var
+			words = bible.split ( /[()\[\]\s,.?@€$%&\/=§;:-<>|!1234567890]+/ );
+			
+			for ( var i = 0; i < words.length; ++i ) {
+				
+				bt.insert ( words[ i ] );
+			}			
+
+/*			var
+			f = bt.find( "god" );
+			
+			document.getElementById ( "found" ).textContent = "depth: " + f.depth ( ) + "\n" + f.val + "\n";*/
+			document.getElementById ( "all" ).textContent   = "depth: " + bt.depth ( ) + "\n" + bt.txt ( );			
+			
+			var
+			arr = bt.toArr ( ),
+			arrStr = "";
+			
+			for ( var i = 0; i < arr.length; ++i ) {
+				
+				arrStr = arrStr + arr[ i ] + "\n";				
+			}
+			document.getElementById ( "arr" ).textContent = "size: " + arr.length + "\n" + arrStr;
+			
+			var
+			sbt = new BinTree ( );
+			
+			sbt.fromArr( arr );
+			
+			document.getElementById ( "allSorted" ).textContent = "depth: " + sbt.depth ( ) + "\n" + sbt.txt ( );
+			
+			var
+			addr = "";
+			
+			function keyUp ( event ) {
+			
+				var 
+				c = event.which || event.keyCode;
+   				
+   				switch ( c ) {
+					
+					case 38 : {
+						
+						var
+						tmp = sbt.getByAddr ( addr );
+
+						if ( tmp.lft )
+
+							addr += "0";
+
+						break;
+					}
+					case 37 : {
+						
+						addr = addr.substr( 0, addr.length - 1 );
+						break;
+					}
+					case 40 : {
+						
+						var
+						tmp = sbt.getByAddr ( addr );
+
+						if ( tmp.lft )
+
+							addr += "1";
+						
+						break;
+					}
+					case 38 : {
+						
+						addr = "";
+						break;
+					}
+				}
+				var
+				txtL = sbt.getByAddr ( addr + "0" ).val,
+				txtM = sbt.getByAddr ( addr ).val,
+				txtR = sbt.getByAddr ( addr + "1" ).val;
+				
+				document.getElementById ( "output" ).textContent = txtL + "\n" + txtM + "\n" + txtR;
+				document.getElementById ( "input" ).value = addr;
+			}
+		</script>
+	</body>
+</html>

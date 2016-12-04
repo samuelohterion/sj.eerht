@@ -20,18 +20,20 @@
 			var
 			cJsoN = new JsoN ( myData );
 			
-			onKeyUp = function ( pEvent ) {
+			onKeyUp = function ( event ) {
 
-				if ( pEvent.keyCode == 8 ) {
+//				event.cancelBubble = true;
+//				event.returnValue  = false;
+//				if ( pEvent.keyCode == 8 ) {
 
-					pEvent.cancelBubble = true;
-					pEvent.returnValue  = false;
+//					pEvent.cancelBubble = true;
+//					pEvent.returnValue  = false;
 					
-					alert ( "Sie haben BACKSPACE gedrückt" );
-				}
+//					alert ( "Sie haben BACKSPACE gedrückt" );
+//				}
 				
 				var
-				keyCode = pEvent.keyCode;
+				keyCode = event.which || event.keyCode;
 				
 				switch ( keyCode ) {
 					
@@ -48,23 +50,27 @@
 					default : break;
 				}
 
-				document.write( cJsoN.getHeadText( ) );
-				document.write( cJsoN.getTailText( 2 ) );
-				document.write( cJsoN.getHeadTailText( 2 ) );
+				cJsoN.newPrint ( );
+
+				var
+				txt = cJsoN.getHeadText( cJsoN.addr ) + "<br>" + cJsoN.getTailText( 2 );
+
+				document.getElementById( "text" ).innerHTML = txt;
+//				document.write( cJsoN.getHeadTailText( 2 ) );
 			
-				return pEvent.returnValue;
+				return event.returnValue;
 			}
 			
 		</script>
 		
 	</head>
 	
-	<body style="{ background:#a0b0c0 }">
+	<body style="{ background:#a0b0c0 }" onkeyup="onKeyUp( event );">
+		
+		<div id="text">
+		</div>
 		
 		<script type="text/javascript">
-		
-			document.onkeyup = onKeyUp;
-			
 		</script>
 		
 	</body>

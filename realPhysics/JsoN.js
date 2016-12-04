@@ -10,7 +10,7 @@ function JsoN ( pData ) {
 	this.Addr = function ( pData ) {
 		
 		this.l = 0;
-		this.r = pData.next.length - 1;
+		this.r = pData.nxt.length - 1;
 		this.i = [ ( this.r + this.l ) >> 1 ];
 		this.gId = function ( ) { 
 			
@@ -65,11 +65,7 @@ function JsoN ( pData ) {
 		this.cDta = this.data;
 		this.addr = new this.Addr ( this.cDta );
 	}
-	this.newPrint = function ( ) {
-		
-		this.cDta = this.data;
-	}
-	this.reset ( pData );
+	this.newSearch ( pData );
 }
 
 JsoN.prototype = {
@@ -103,13 +99,13 @@ JsoN.prototype = {
 			}
 		}
 	},
-	_gtTlTxt_  : function ( pData, row, col, pLevelsLeft ) {
+	_gtTlTxt_  : function ( pTxt, pData, row, col, pLevelsLeft ) {
 		
-		if( --pLevelsLeft < 0 )	return;
+		if( --pLevelsLeft < 0 )	return pTxt;
 		
-		this.cTxt += "<br>" + "_".repeat( col ) + pData.val;
+		pTxt += "<br>" + "_".repeat( col ) + pData.val;
 		
-		if ( pData.nxt == null ) return;
+		if ( pData.nxt == null ) return pTxt;
 
 		col += 2;
 		
@@ -119,7 +115,7 @@ JsoN.prototype = {
 
 			if ( pData.nxt[ i ] != null )
 			
-				this._gtTlTxt_ ( pData.nxt[ i ], row, col, pLevelsLeft );
+				this._gtTlTxt_ ( pTxt, pData.nxt[ i ], row, col, pLevelsLeft );
 		}
 		
 		col -= 2;
@@ -130,30 +126,28 @@ JsoN.prototype = {
 		txt = '',
 		dat = this.data;
 		
-		for ( var i = 0; i < pIdArr.length; ++i ) {
+		for ( var i = 0; i < pIdArr.i.length; ++i ) {
 			
 			txt += dat.val;
-			dat =  dat.nxt[ pIdArr[ i ] ];
+			dat =  dat.nxt[ pIdArr.i[ i ] ];
 		}
 		
 		return txt;		
 	},
 	getTailText : function ( pLevelsLeft ) {
 		
-		this.cTxt = '';
+		this.txt = '';
 		 
 		var
 		col = 0,
 		row = 0;
 		
-		this._gtTlTxt_ ( this.cDta, row, col, pLevelsLeft );
+		this._gtTlTxt_ ( txt, this.cDta, row, col, pLevelsLeft );
 		
 		return this.cTxt;		
 	},
 	getHeadTailText : function ( pIdArr, pLevelsLeft ) {
 		
-		var
-		add = new JsoN.Addr ( );
-		txt = getHeadText ( )
+		return this.getHeadText ( pIdArr ) + this.getTailText ( pLevelsLeft );
 	}
 }
