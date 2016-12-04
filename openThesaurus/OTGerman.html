@@ -5,7 +5,7 @@
 		</style>
 		<meta charset="utf-8">
 		<link rel="stylesheet" type="text/css" href="binTree.css">
-		<script src="bible.js">
+		<script src="OpenThesaurus-Textversion/openthesaurus_german.js">
 		</script>
 		<script src="binTree.js">
 		</script>
@@ -29,37 +29,16 @@
 		<script type="text/javascript">
 
 			var
-			bt = new BinTree( );
-			bt.insert( "G" );
-			bt.insert( "D" );
-			bt.insert( "B" );
-			bt.insert( "A" );
-			bt.insert( "C" );
-			bt.insert( "F" );
-			bt.insert( "E" );
-			bt.insert( "H" );
-			bt.insert( "I" );
-			bt.insert( "P" );
-			bt.insert( "V" );
-			bt.insert( "S" );
-			bt.insert( "Q" );
-			bt.insert( "T" );
-			bt.insert( "R" );
-			bt.insert( "W" );
-			bt.insert( "X" );
-			bt.insert( "Z" );
-			bt.insert( "Y" );
-			bt.insert( "THOMAS" );
-			bt.insert( "thomas" );
-			bt.insert( "thomaS" );
-			bt.insert( "ThomaS" );
-			var
-			words = bible.split ( /[()\[\]\s,.?@€$%&\/=§;:-<>|!1234567890]+/ );
+			bt = new BinTree( ),
+//			words = german.split ( /[;]+/ );
+			words = german.split ( /[()\[\]\s,.?@€$%&\/=§;:-<>|!1234567890]+/ );
 
 			for ( var i = 0; i < words.length; ++i ) {
 
 				bt.insert ( words[ i ] );
 			}
+
+			bt.insert ( "Robert" );
 
 /*			var
 			f = bt.find( "god" );
