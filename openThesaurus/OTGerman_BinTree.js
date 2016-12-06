@@ -136,9 +136,9 @@ BinTree.prototype = {
 	_toArr_ ( ) {
 
 		var
-		lArr = [],
-		mArr = [],
-		rArr = [];
+		lArr = [ ],
+		mArr = [ ],
+		rArr = [ ];
 
 		if ( this.lft ) {
 

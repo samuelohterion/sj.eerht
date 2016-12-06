@@ -132,7 +132,7 @@
 			function update ( ) {
 
 				var
-				txtP = addr.length < 1 ? "?\¿/?" : sbt.getByAddr ( addr.substr ( 0, addr.length - 1 ) ).val,
+				txtP = addr.length < 1 ? "?\\¿/?" : sbt.getByAddr ( addr.substr ( 0, addr.length - 1 ) ).val,
 				ndM  = sbt.getByAddr ( addr ),
 				txtM = ndM ? ndM.val : "",
 				txtL = ndM && ndM.lft ? ndM.lft.val : "???",
