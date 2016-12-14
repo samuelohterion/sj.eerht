@@ -329,7 +329,7 @@ My.Anim.prototype = {
 
 		this.tm += 1. / 60.
 
-		if( 10 < this.tm - pItv.l * pDT ) {
+		if( 3 < this.tm - pItv.l * pDT ) {
 
 			this.tm = 0;
 
@@ -349,7 +349,7 @@ My.Anim.prototype = {
 		for ( var i = pItv.f; i <= pItv.l; ++i ) {
 
 			var
-			t = .1 * this.tm + ( i - pItv.l ) * pDT;
+			t = this.tm + ( i - pItv.l ) * pDT;
 
 			t = t < 0 ? 0 : 1 < t ? 1 : t;
 
