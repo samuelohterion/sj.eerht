@@ -79,7 +79,7 @@
 			scn.add( lth );
 
 			var
-			fabrique = new My.Fabrique ( WDTH );
+			fabrique = new My.Fabrique ( WDTH, 1e2);
 
 			scn.add ( fabrique.mesh );
 
@@ -102,15 +102,15 @@
 
 				fabrique.live ( dt );
 
-				fabrique.mesh.rotateY( .003 );
-/*
+//				fabrique.mesh.rotateY( .000 );
+
 				fabrique.mesh.geometry.verticesNeedUpdate = true;
 				fabrique.mesh.geometry.normalsNeedUpdate  = true;
 				fabrique.mesh.geometry.colorsNeedUpdate   = true;
 				fabrique.mesh.geometry.dynamic            = true;
-*/
-//				fabrique.mesh.geometry.computeFaceNormals ( );
-//				fabrique.mesh.geometry.computeVertexNormals ( );
+
+				fabrique.mesh.geometry.computeFaceNormals ( );
+				fabrique.mesh.geometry.computeVertexNormals ( );
 
 				render ( );
 			}

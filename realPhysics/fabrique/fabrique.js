@@ -4,22 +4,21 @@ My = {
 
 		this.i0 = pId0;
 		this.i1 = pId1;
-		this.l  = ( pVertices[ pId1 ].clone ( ).sub ( pVertices[ pId1 ] ) ).length( );
+		var
+		d = pVertices[ pId1 ].clone ( ).sub ( pVertices[ pId0 ] );
+		d.y = 0;
+		this.l  = d.length( );
 	},
 
-	Mass : function ( pX, pY, pZ ) {
-
-		THREE.Vector3.call ( this, pX, pY,pZ );
-		this.vel = new THREE.Vector3 ( 0, 0, 0 );
-		this.acc = new THREE.Vector3 ( 0, 0, 0 );
-	},
-
-	Fabrique : function ( pWidth = 100, pSpringConstant = 1., pMaterial = new THREE.MeshPhongMaterial ( { color: 0xff8040, side: THREE.DoubleSide, shading: THREE.SmoothShading } ) ) {
+	Fabrique : function ( pWidth = 100, pSpringConstant = 1, pMaterial = new THREE.MeshPhongMaterial ( { color: 0xff8040, side: THREE.DoubleSide, shading: THREE.SmoothShading } ) ) {
 
 		this.mesh           = new THREE.Mesh ( new THREE.Geometry ( ), pMaterial );
 		this.springConstant = pSpringConstant;
 		this.width          = pWidth;
 		this.springs        = [ ];
+		this.vel			= [ ];
+		this.acc			= [ ];
+		this.lnks			= [ ];
 
 		var
 		area = this.width * this.width,
@@ -29,25 +28,63 @@ My = {
 
 			for ( var x = 0; x < this.width; ++x ) {
 
-				this.mesh.geometry.vertices.push ( new My.Mass ( x - offs, .1 * Math.random ( ) - .05, z - offs ) );
+				this.mesh.geometry.vertices.push ( new THREE.Vector3 ( x - offs, 0. * ( 2 * Math.random ( ) - 1 ), z - offs ) );
+				this.acc.push( new THREE.Vector3 ( ) );
+				this.vel.push( new THREE.Vector3 ( ) );
+				this.lnk.push ( 0 );
+			}
+		}
+
+		for ( var x = 0; x < this.width; ++x ) {
+
+			for ( var z = 0; z < this.width - 1; ++z ) {
+
+				var
+				from = x * this.width + z,
+				to   = x * this.width + z + 1;
+
+				++this.lnks[ from ];
+				++this.lnks[ to ];
+
+				this.springs.push ( new My.Spring ( from, to, this.mesh.geometry.vertices ) );
 			}
 		}
 
 		for ( var z = 0; z < this.width; ++z ) {
 
-			this.springs.push ( new My.Spring ( z, z + this.width, this.mesh.geometry.vertices ) );
-		}
+			for ( var x = 0; x < this.width - 1; ++x ) {
 
-		for ( var x = 0; x < this.width; ++x ) {
+				var
+				from = x * this.width + z,
+				to   = ( x + 1 ) * this.width + z;
 
-			this.springs.push ( new My.Spring ( x * this.width, x * this.width + 1, this.mesh.geometry.vertices ) );
+				++this.lnks[ from ];
+				++this.lnks[ to ];
+
+				this.springs.push ( new My.Spring ( from, to, this.mesh.geometry.vertices ) );
+			}
 		}
 
 		for ( var z = 0; z < this.width - 1; ++z ) {
 
 			for ( var x = 0; x < this.width - 1; ++x ) {
 
-				this.springs.push ( new My.Spring ( x * this.width + z, ( x + 1 ) * this.width + z + 1, this.mesh.geometry.vertices ) );
+				var
+				from = x * this.width + z,
+				to   = ( x + 1 ) * this.width + z + 1;
+
+				++this.lnks[ from ];
+				++this.lnks[ to ];
+
+				this.springs.push ( new My.Spring ( from, to, this.mesh.geometry.vertices ) );
+
+				from = x * this.width + z + 1;
+				to   = ( x + 1 ) * this.width + z;
+
+				++this.lnks[ from ];
+				++this.lnks[ to ];
+
+				this.springs.push ( new My.Spring ( from, to, this.mesh.geometry.vertices ) );
 			}
 		}
 
@@ -65,7 +102,7 @@ My = {
 				this.mesh.geometry.faces.push ( new THREE.Face3( i1, i3, i2 ) );
 			}
 		}
-
+*
 		this.mesh.geometry.verticesNeedUpdate = true;
 		this.mesh.geometry.normalsNeedUpdate  = true;
 		this.mesh.geometry.colorsNeedUpdate   = true;
@@ -73,19 +110,9 @@ My = {
 
 		this.mesh.geometry.computeFaceNormals ( );
 		this.mesh.geometry.computeVertexNormals ( );
+		*/
 	}
 }
-
-My.Mass.prototype = new THREE.Vector3;
-
-My.Mass.constructor = My.Mass;
-
-My.Mass.prototype.clone = function ( ) {
-
-	return new this.constructor( this.x, this.y, this.z );
-}
-
-My.Mass.prototype.__proto__ = new THREE.Vector3( );
 
 My.Spring.prototype = {
 
@@ -95,6 +122,45 @@ My.Spring.prototype = {
 My.Fabrique.prototype = {
 
 	constructor   : My.Fabrique,
+	sigmoid       : function ( pV, pLen = 1., pDX = .2, pDY = 1. ) {
+
+		var
+		s = new THREE.Vector3 ( 0, 0, 0 );
+
+		for ( var i = 0; i < this.lnk[ pId ].length; ++i ) {
+
+			s.add( this.vertices[ pId ].this.lnk[ pId ][ i ] );
+		}
+
+		s.divideScalar( this.lnk[ pId ].length );
+
+		var
+		v = this.mesh.geometry.vertices[ pId ]. clone ( ),
+		l = s.sub ( v ).length ( ),
+		l2 = pDY * ( 2.  / ( 1. + Math.exp( -l / pDX )  ) - 1. );
+
+		return v.multiplyScalar( l2 / l )
+	},
+
+	sigmoIt       : function ( pDX = 1., pDY = 1. ) {
+
+		var
+		s = new THREE.Vector3 ( 0, 0, 0 );
+
+		for ( var i = 0; i < this.lnk[ pId ].length; ++i ) {
+
+			s.add( this.vertices[ pId ].this.lnk[ pId ][ i ] );
+		}
+
+		s.divideScalar( this.lnk[ pId ].length );
+
+		var
+		v = this.mesh.geometry.vertices[ pId ]. clone ( ),
+		l = s.sub ( v ).length ( ),
+		l2 = pDY * ( 2.  / ( 1. + Math.exp( -l / pDX )  ) - 1. );
+
+		return v.multiplyScalar( l2 / l )
+	},
 
 	live : function ( pDt ) {
 
@@ -102,24 +168,30 @@ My.Fabrique.prototype = {
 
 			var
 			s  = this.springs[ i ],
-			v0 = this.mesh.geometry.vertices[ s.i0 ],
+			v0 = this.mesh.geometry.vertices[ s.i0 ].clone( ),
 			v1 = this.mesh.geometry.vertices[ s.i1 ].clone( ),
+			a0 = this.acc[ s.i0 ],
+			a1 = this.acc[ s.i1 ],
 			d  = v1.sub ( v0 ),
 			l  = d.length( ),
-			f  = this.springConstant / l * ( s.l - d.length ( ) );
+			f  = this.springConstant * ( 1 - s.l / l );
 
-			v0.acc.add ( f );
-			v1.acc.add ( f.clone ( ).multiplyScalar ( -1 ) );
+			d.multiplyScalar( f );
+			a0.add ( d.clone( ) );
+			a1.sub ( d.clone( ) );
 		}
 
-		for ( var i = 0; i < vs.length; ++i ) {
+		for ( var i = this.width; i < this.mesh.geometry.vertices.length; ++i ) {
 
 			var
 			mass = this.mesh.geometry.vertices[ i ];
 
-			mass.add( mass.vel.clone ( ).multiplyScalar( pDt ) );
-			mass.vel.add( mass.acc.clone ( ).multiplyScalar( pDt ) );
-			mass.acc.copy ( new THREE.Vector3 ( 0, 0, 0 ) );
+			this.acc[ i ].y -= 9.81;
+			mass.add( this.vel[ i ].clone ( ).multiplyScalar( pDt ) );
+			this.vel[ i ].add( this.acc[ i ].clone ( ).multiplyScalar( pDt ).sub( this.vel[ i ].clone ( ).multiplyScalar( .1 ) ) );
+//			this.vel[ i ].add( this.acc[ i ].clone ( ).multiplyScalar( pDt ) );
+			this.acc[ i ].set ( 0, 0, 0 );
 		}
+		this.sigmoid( .1, 1. );
 	}
 }
