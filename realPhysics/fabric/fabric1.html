@@ -41,7 +41,7 @@
 		<script type="text/javascript">
 
 			var
-			WDTH = 4;
+			WDTH = 32;
 
 			var
 			tm   = ( new Date ( ) ).getTime ( ),
@@ -50,9 +50,9 @@
 
 			var
 			cmr  = new THREE.PerspectiveCamera ( 60, window.innerWidth / window.innerHeight, .1, 10000 );
-			cmr.position.set ( 0., 50., 100. );
+			cmr.position.set ( 0., 0, 2. * WDTH );
 			cmr.up.set( 0, 1, 0 );
-			cmr.lookAt( new THREE.Vector3 ( 0, 0, 0 ) );
+			cmr.lookAt( new THREE.Vector3 ( 0, WDTH, 0 ) );
 
 			var
 			rndr = new THREE.WebGLRenderer ( );
@@ -70,16 +70,17 @@
 
 			var
 			lta = new THREE.AmbientLight( 0x404040, 2 ),
-			lgt = new THREE.PointLight( 0x80c0f0, 10, 120., 2 ),
-			lth = new THREE.PointLightHelper( lgt, 10 );
-			lgt.position.set( 0, 80, 0 );
+			lgt = new THREE.PointLight( 0x80c0f0, 3, 2.5 * WDTH, 2 ),
+			lth = new THREE.PointLightHelper( lgt, 1 );
+			lgt.position.set( 0, .5 * WDTH, +.25 * WDTH );
 
 			scn.add( lta );
 			scn.add( lgt );
 			scn.add( lth );
 
 			var
-			fabrique = new My.Fabrique ( WDTH, 1e2);
+			fabrique = new My.Fabrique ( WDTH, 2e3 );
+			fabrique.mesh.geometry.translate( 0., 1.* WDTH, -.5 * WDTH );
 
 			scn.add ( fabrique.mesh );
 
@@ -100,17 +101,20 @@
 
 					return;
 
-				fabrique.live ( dt );
+				for ( var i = 0; i < 4;++i )
+
+					fabrique.live ( .25 * dt );
 
 //				fabrique.mesh.rotateY( .000 );
+
+				fabrique.mesh.geometry.computeFaceNormals ( );
+				fabrique.mesh.geometry.computeVertexNormals ( );
 
 				fabrique.mesh.geometry.verticesNeedUpdate = true;
 				fabrique.mesh.geometry.normalsNeedUpdate  = true;
 				fabrique.mesh.geometry.colorsNeedUpdate   = true;
 				fabrique.mesh.geometry.dynamic            = true;
 
-				fabrique.mesh.geometry.computeFaceNormals ( );
-				fabrique.mesh.geometry.computeVertexNormals ( );
 
 				render ( );
 			}
