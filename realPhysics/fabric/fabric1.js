@@ -151,7 +151,7 @@ My.Spring.prototype = {
 		dV = v1.clone ( ).sub ( v0 ),
 		d  = dV.length ( ),
 		l  = ( d - this.l ) / this.l,
-		l2 = .5 * ( 1. + .1 * My.sigmoid ( l ) ) * this.l;
+		l2 = .5 * ( 1. + .001 * My.sigmoid ( l ) ) * this.l;
 
 		dV.multiplyScalar( l2 / d );
 
@@ -193,7 +193,7 @@ My.Fabrique.prototype = {
 			if ( !this.masses[ i ].fix ) {
 
 				this.mesh.geometry.vertices[ i ].divideScalar ( this.masses[ i ].sum );
-				this.masses[ i ].vel.copy ( ( ( this.mesh.geometry.vertices[ i ].clone ( ).sub ( this.masses[ i ].tmp ) ).divideScalar ( 1.001 * pDt ) ).add ( this.masses[ i ].acc.clone ( ).multiplyScalar ( pDt ) ) );
+				this.masses[ i ].vel.copy ( ( ( this.mesh.geometry.vertices[ i ].clone ( ).sub ( this.masses[ i ].tmp ) ).divideScalar ( 1.005 * pDt ) ).add ( this.masses[ i ].acc.clone ( ).multiplyScalar ( pDt ) ) );
 				this.masses[ i ].tmp.copy( this.mesh.geometry.vertices[ i ] );
 //				this.masses[ i ].pos.set( 0, 0, 0 );
 			}
