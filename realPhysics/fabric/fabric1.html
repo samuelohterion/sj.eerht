@@ -183,7 +183,7 @@
 				lgt2.position.set(  .3 * WDTH, .6 * WDTH, -.0045 * WDTH );
 				lgt3.position.set( -.3 * WDTH, .6 * WDTH, -.0045 * WDTH );
 
-				fabric = new My.Fabrique ( WDTH, mCtl.k, parseInt ( 0x1000000 * Math.random( ) ) & 0x0f0f0f, mCtl.smooth );
+				fabric = new My.Fabrique ( WDTH, mCtl.k, 0x101010 * parseInt ( 4 * Math.random( ) ) + ( parseInt ( 0x1000000 * Math.random( ) ) & 0x0f0f0f ), mCtl.smooth );
 				scn.add ( fabric.mesh );
 
 				tm   = ( new Date ( ) ).getTime ( );
