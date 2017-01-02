@@ -47,7 +47,7 @@ My = {
 		++pMasses[ pId1 ].sum;
 	},
 
-	Fabrique : function ( pWidth = 32, pSpringConstant = 1e3, pColor = 0xFF3020 ) {
+	Fabrique : function ( pWidth = 32, pSpringConstant = 1e3, pColor = 0xFF3020, pSmoothShading = true ) {
 
 		this.mesh           = null;
 		this.springConstant = pSpringConstant;
@@ -55,7 +55,7 @@ My = {
 		this.springs        = [ ];
 		this.masses			= [ ];
 
-		this.init( pWidth, pSpringConstant, pColor );
+		this.init( pWidth, pSpringConstant, pColor, pSmoothShading );
 	}
 }
 
@@ -163,9 +163,9 @@ My.Fabrique.prototype = {
 		this.sigmoIt( pDt );
 	},
 
-	init : function ( pWidth, pSpringConstant, pColor = 0xFF3020 ) {
+	init : function ( pWidth, pSpringConstant, pColor = 0xFF3020, pSmoothShading = true ) {
 
-		this.mesh           = new THREE.Mesh ( new THREE.Geometry ( ), new THREE.MeshPhongMaterial ( { color: pColor, side: THREE.DoubleSide, shading: THREE.SmoothShading } ) );
+		this.mesh           = new THREE.Mesh ( new THREE.Geometry ( ), new THREE.MeshPhongMaterial ( { color: pColor, side: THREE.DoubleSide, shading : ( pSmoothShading ? THREE.SmoothShading : THREE.FlatShading ) } ) );
 		this.springConstant = pSpringConstant;
 		this.width          = pWidth;
 		this.springs.length = 0;

@@ -55,9 +55,10 @@
 			var
 			MCtl = function ( ) {
 
-				this.width = 40;
-				this.k     = 3e3;
-				this.start = function ( ) {
+				this.width  = 40;
+				this.k      = 3e3;
+				this.smooth = true;
+				this.start  = function ( ) {
 
 					reset ( );
 				}
@@ -65,10 +66,9 @@
 			mCtl = new MCtl ( ),
 			gCtl = new dat.GUI ( );
 
-			var
-			wCtl = gCtl.add ( mCtl, 'width', 2, 64 ),
-			sCtl = gCtl.add ( mCtl, 'k', 1, 10000, 10 );
-
+			gCtl.add ( mCtl, 'width', 2, 128 );
+			gCtl.add ( mCtl, 'k', 1, 20000, 10 );
+			gCtl.add ( mCtl, 'smooth', true );
 			gCtl.add ( mCtl, 'start' );
 
 			//wCtl.onFinishChange ( )
@@ -85,7 +85,7 @@
 			now  = ( new Date ( ) ).getTime ( ) - tm;
 
 			var
-			cmr  = new THREE.PerspectiveCamera ( 45, window.innerWidth / window.innerHeight, .1, 10000 );
+			cmr  = new THREE.PerspectiveCamera ( 60, window.innerWidth / window.innerHeight, .1, 10000 );
 			cmr.position.set ( 0., .0 * WDTH, 1.5 * WDTH );
 			cmr.up.set( 0, 1, 0 );
 			cmr.lookAt( new THREE.Vector3 ( 0, 0, 0 ) );
@@ -105,10 +105,10 @@
 			scn = new THREE.Scene( );
 
 			var
-			lta = new THREE.AmbientLight( 0x404040, 2 ),
-			lgt = new THREE.PointLight( 0xd0e0f0, 2, 2.5 * WDTH, 2 ),
+			lta = new THREE.AmbientLight( 0x404040, 1 ),
+			lgt = new THREE.PointLight( 0xd0e0f0, 3, 5. * WDTH, 2 ),
 			lth = new THREE.PointLightHelper( lgt, 1 );
-			lgt.position.set( 0, 0, .5 * WDTH );
+			lgt.position.set( 0, 0, .25 * WDTH );
 
 			scn.add( lta );
 			scn.add( lgt );
@@ -150,6 +150,10 @@
 				fabric.mesh.geometry.colorsNeedUpdate   = true;
 				fabric.mesh.geometry.dynamic            = true;
 
+				var
+				phi = .5 * Math.sin( .001 * now );
+
+				lgt.position.set( WDTH * Math.sin( phi ), .75 * WDTH - WDTH * Math.cos( phi ), .5 * WDTH );
 
 				render ( );
 
@@ -167,7 +171,7 @@
 
 				WDTH = parseInt ( mCtl.width );
 
-				fabric = new My.Fabrique ( WDTH, mCtl.k, 0x302010 );
+				fabric = new My.Fabrique ( WDTH, mCtl.k, parseInt ( 0x1000000 * Math.random( ) ) & 0x1f1f1f, mCtl.smooth );
 				scn.add ( fabric.mesh );
 
 				tm   = ( new Date ( ) ).getTime ( );
