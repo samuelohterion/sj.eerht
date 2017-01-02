@@ -9,6 +9,15 @@
 
 		<style type="text/css">
 
+			html, body, canvas {
+				border :0;
+				padding:0;
+				margin:0;
+				display : block;
+				width:  100%;
+				height: 100%;
+			}
+
 		</style>
 
 <!--
@@ -20,7 +29,6 @@
 
 		<script src="../../../three.js/examples/js/libs/dat.gui.min.js"></script>
 -->
-
 		<script src="https://threejs.org/build/three.js" type="text/javascript"></script>
 
 		<script src="https://threejs.org/examples/js/controls/OrbitControls.js" type="text/javascript"></script>
@@ -42,7 +50,34 @@
 		<script type="text/javascript">
 
 			var
-			WDTH = 50;
+			stats = new Stats ( );
+
+			var
+			MCtl = function ( ) {
+
+				this.width = 40;
+				this.k     = 3e3;
+				this.start = function ( ) {
+
+					reset ( );
+				}
+			},
+			mCtl = new MCtl ( ),
+			gCtl = new dat.GUI ( );
+
+			var
+			wCtl = gCtl.add ( mCtl, 'width', 2, 64 ),
+			sCtl = gCtl.add ( mCtl, 'k', 1, 10000, 10 );
+
+			gCtl.add ( mCtl, 'start' );
+
+			//wCtl.onFinishChange ( )
+
+			stats.showPanel ( 0 );
+			document.body.appendChild ( stats.dom );
+
+			var
+			WDTH = 40;
 
 			var
 			tm   = ( new Date ( ) ).getTime ( ),
@@ -50,15 +85,15 @@
 			now  = ( new Date ( ) ).getTime ( ) - tm;
 
 			var
-			cmr  = new THREE.PerspectiveCamera ( 60, window.innerWidth / window.innerHeight, .1, 10000 );
-			cmr.position.set ( 0., 0, 2. * WDTH );
+			cmr  = new THREE.PerspectiveCamera ( 45, window.innerWidth / window.innerHeight, .1, 10000 );
+			cmr.position.set ( 0., .0 * WDTH, 1.5 * WDTH );
 			cmr.up.set( 0, 1, 0 );
-			cmr.lookAt( new THREE.Vector3 ( 0, WDTH, 0 ) );
+			cmr.lookAt( new THREE.Vector3 ( 0, 0, 0 ) );
 
 			var
 			rndr = new THREE.WebGLRenderer ( );
 			rndr.setSize ( window.innerWidth, window.innerHeight );
-			rndr.shadowMap.enabled = true;
+//			rndr.shadowMap.enabled = true;
 
 			document.body.appendChild ( rndr.domElement );
 
@@ -71,21 +106,20 @@
 
 			var
 			lta = new THREE.AmbientLight( 0x404040, 2 ),
-			lgt = new THREE.PointLight( 0x80c0f0, 3, 2.5 * WDTH, 2 ),
+			lgt = new THREE.PointLight( 0xd0e0f0, 2, 2.5 * WDTH, 2 ),
 			lth = new THREE.PointLightHelper( lgt, 1 );
-			lgt.position.set( 0, .5 * WDTH, +.25 * WDTH );
+			lgt.position.set( 0, 0, .5 * WDTH );
 
 			scn.add( lta );
 			scn.add( lgt );
 			scn.add( lth );
 
 			var
-			fabrique = new My.Fabrique ( WDTH, 2e3 );
-			fabrique.mesh.geometry.translate( 0., 1.* WDTH, -.5 * WDTH );
+			fabric = new My.Fabrique ( WDTH, 4e3 );
 
-			scn.add ( fabrique.mesh );
+			scn.add ( fabric.mesh );
 
-			reset( );
+			//reset( );
 
 			function animate ( ) {
 
@@ -93,31 +127,33 @@
 
 				now  = ( new Date ( ) ).getTime ( ) - tm;
 
+				stats.begin ( );
+
 				var
 				dt = 1e-3 * ( now - then );
 
 				then = now;
 
-				if( 1. < dt || dt < 1. / 120. )
-
-					return;
+				dt = 1. / 60. < dt ? 1. / 60. : dt;
 
 				for ( var i = 0; i < 10;++i )
 
-					fabrique.live ( .1 * dt );
+					fabric.live ( .1 * dt );
 
-//				fabrique.mesh.rotateY( .000 );
+//				fabric.mesh.rotateY( .01 );
 
-				fabrique.mesh.geometry.computeFaceNormals ( );
-				fabrique.mesh.geometry.computeVertexNormals ( );
+				fabric.mesh.geometry.computeFaceNormals ( );
+				fabric.mesh.geometry.computeVertexNormals ( );
 
-				fabrique.mesh.geometry.verticesNeedUpdate = true;
-				fabrique.mesh.geometry.normalsNeedUpdate  = true;
-				fabrique.mesh.geometry.colorsNeedUpdate   = true;
-				fabrique.mesh.geometry.dynamic            = true;
+				fabric.mesh.geometry.verticesNeedUpdate = true;
+				fabric.mesh.geometry.normalsNeedUpdate  = true;
+				fabric.mesh.geometry.colorsNeedUpdate   = true;
+				fabric.mesh.geometry.dynamic            = true;
 
 
 				render ( );
+
+				stats.end ( );
 			}
 
 			function render ( ) {
@@ -127,12 +163,19 @@
 
 			function reset( ) {
 
+				scn.remove ( fabric.mesh );
+
+				WDTH = parseInt ( mCtl.width );
+
+				fabric = new My.Fabrique ( WDTH, mCtl.k, 0x302010 );
+				scn.add ( fabric.mesh );
+
 				tm   = ( new Date ( ) ).getTime ( );
 				then = ( new Date ( ) ).getTime ( ) - tm;
 				now  = ( new Date ( ) ).getTime ( ) - tm;
 
-				fabrique.mesh.geometry.computeFaceNormals ( );
-				fabrique.mesh.geometry.computeVertexNormals ( );
+				fabric.mesh.geometry.computeFaceNormals ( );
+				fabric.mesh.geometry.computeVertexNormals ( );
 
 				requestAnimationFrame ( render );
 			}

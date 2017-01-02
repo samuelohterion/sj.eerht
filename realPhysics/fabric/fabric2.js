@@ -193,7 +193,7 @@ My.Fabrique.prototype = {
 			if ( !this.masses[ i ].fix ) {
 
 				this.mesh.geometry.vertices[ i ].divideScalar ( this.masses[ i ].sum );
-				this.masses[ i ].vel.copy ( ( ( this.mesh.geometry.vertices[ i ].clone ( ).sub ( this.masses[ i ].tmp ) ).divideScalar ( 1.001 * pDt ) ).add ( this.masses[ i ].acc.clone ( ).multiplyScalar ( pDt ) ) );
+				this.masses[ i ].vel.copy ( ( ( this.mesh.geometry.vertices[ i ].clone ( ).sub ( this.masses[ i ].tmp ) ).divideScalar ( 1.01 * pDt ) ).add ( this.masses[ i ].acc.clone ( ).multiplyScalar ( pDt ) ) );
 				this.masses[ i ].tmp.copy( this.mesh.geometry.vertices[ i ] );
 //				this.masses[ i ].pos.set( 0, 0, 0 );
 			}

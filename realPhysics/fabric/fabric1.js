@@ -47,13 +47,129 @@ My = {
 		++pMasses[ pId1 ].sum;
 	},
 
-	Fabrique : function ( pWidth = 100, pSpringConstant = 1, pMaterial = new THREE.MeshPhongMaterial ( { color: 0xe0c0a0, side: THREE.DoubleSide, shading: THREE.SmoothShading } ) ) {
+	Fabrique : function ( pWidth = 32, pSpringConstant = 1e3, pColor = 0xFF3020 ) {
 
-		this.mesh           = new THREE.Mesh ( new THREE.Geometry ( ), pMaterial );
+		this.mesh           = null;
 		this.springConstant = pSpringConstant;
 		this.width          = pWidth;
 		this.springs        = [ ];
 		this.masses			= [ ];
+
+		this.init( pWidth, pSpringConstant, pColor );
+	}
+}
+
+My.Spring.prototype = {
+
+	constructor : My.Spring,
+
+	sigmoIt     : function ( pVerts, pMasses ) {
+
+		var
+		v0 = pMasses[ this.i0 ].pos,
+		v1 = pMasses[ this.i1 ].pos,
+		dV = v1.clone ( ).sub ( v0 ),
+		d  = dV.length ( ),
+		l  = ( d - this.l ) / this.l,
+		l2 = .5 * ( 1. + .001 * My.sigmoid ( l ) ) * this.l;
+
+		dV.multiplyScalar( l2 / d );
+
+		var
+		dC = ( v0.clone ( ).add ( v1 ) ).multiplyScalar ( .5 ),
+		dV0 = dC.clone ( ).sub ( dV ),
+		dV1 = dC.clone ( ).add ( dV );
+
+		if ( !pMasses[ this.i0 ].fix )
+
+			pVerts[ this.i0 ].add ( dV0 );
+
+		if ( !pMasses[ this.i1 ].fix )
+
+			pVerts[ this.i1 ].add ( dV1 );
+	}
+}
+
+My.Fabrique.prototype = {
+
+	constructor   : My.Fabrique,
+
+	sigmoIt       : function ( pDt ) {
+
+		for ( var i = 0; i < this.mesh.geometry.vertices.length; ++i ) {
+
+			if ( !this.masses[ i ].fix )
+
+				this.mesh.geometry.vertices[ i ].set ( 0, 0, 0 );
+		}
+
+		for ( var i = 0; i < this.springs.length; ++i ) {
+
+			this.springs[ i ].sigmoIt ( this.mesh.geometry.vertices, this.masses );
+		}
+
+		for ( var i = 0; i < this.mesh.geometry.vertices.length; ++i ) {
+
+			if ( !this.masses[ i ].fix ) {
+
+				this.mesh.geometry.vertices[ i ].divideScalar ( this.masses[ i ].sum );
+				this.masses[ i ].vel.copy ( ( ( this.mesh.geometry.vertices[ i ].clone ( ).sub ( this.masses[ i ].tmp ) ).divideScalar ( 1.0005 * pDt ) ).add ( this.masses[ i ].acc.clone ( ).multiplyScalar ( pDt ) ) );
+				this.masses[ i ].tmp.copy( this.mesh.geometry.vertices[ i ] );
+//				this.masses[ i ].pos.set( 0, 0, 0 );
+			}
+		}
+	},
+
+	live : function ( pDt ) {
+
+		var
+		v  = this.mesh.geometry.vertices,
+		m  = this.masses;
+
+		for ( var i = 0; i < m.length; ++i ) {
+
+			m[ i ].acc.set( 0, -98.1, 0 );
+		}
+
+		for ( var i = 0; i < this.springs.length; ++i ) {
+
+			var
+			s  = this.springs[ i ],
+			m0 = m[ s.i0 ],
+			m1 = m[ s.i1 ],
+			v0 = v[ s.i0 ],
+			v1 = v[ s.i1 ].clone( ),
+			d  = v1.sub ( v0 ),
+			l  = d.length( ),
+			f  = this.springConstant * ( 1 - s.l / l );
+
+			d.multiplyScalar( f );
+			m0.acc.add ( d.clone( ) );
+			m1.acc.sub ( d.clone( ) );
+		}
+
+		for ( var i = 0; i < m.length; ++i ) {
+
+			var
+			mi = m[ i ];
+
+			if ( !mi.fix ) {
+
+				mi.pos.add ( mi.vel.clone ( ).multiplyScalar ( pDt ) );
+//				mi.vel.add( ( mi.acc.clone ( ).multiplyScalar( pDt ) ).sub ( mi.vel.clone ( ).multiplyScalar( 0.5 ) ) );
+			}
+		}
+
+		this.sigmoIt( pDt );
+	},
+
+	init : function ( pWidth, pSpringConstant, pColor = 0xFF3020 ) {
+
+		this.mesh           = new THREE.Mesh ( new THREE.Geometry ( ), new THREE.MeshPhongMaterial ( { color: pColor, side: THREE.DoubleSide, shading: THREE.SmoothShading } ) );
+		this.springConstant = pSpringConstant;
+		this.width          = pWidth;
+		this.springs.length = 0;
+		this.masses.length = 0;
 
 		var
 		area = this.width * this.width,
@@ -63,7 +179,8 @@ My = {
 
 			for ( var x = 0; x < this.width; ++x ) {
 
-				this.masses.push ( new My.Mass( x - offs, 0.001 * ( 2 * Math.random ( ) - 1 ), z - offs, z == 0 ) );
+				this.masses.push ( new My.Mass( x - offs, .6 * this.width + ( z == 0 ? 0 : 0.01 * ( 2 * Math.random ( ) - 1 ) ), z - offs, z == 0 ) );
+				this.mesh.geometry.vertices.push( this.masses[ this.masses.length - 1 ].pos.clone ( ) );
 			}
 		}
 
@@ -131,115 +248,28 @@ My = {
 		this.mesh.geometry.computeFaceNormals ( );
 		this.mesh.geometry.computeVertexNormals ( );
 		*/
-
-		for ( var i = 0; i < this.masses.length; ++i ) {
-
-			this.mesh.geometry.vertices.push( this.masses[ i ].pos.clone ( ) );
-		}
-	}
-}
-
-My.Spring.prototype = {
-
-	constructor : My.Spring,
-
-	sigmoIt     : function ( pVerts, pMasses ) {
-
-		var
-		v0 = pMasses[ this.i0 ].pos,
-		v1 = pMasses[ this.i1 ].pos,
-		dV = v1.clone ( ).sub ( v0 ),
-		d  = dV.length ( ),
-		l  = ( d - this.l ) / this.l,
-		l2 = .5 * ( 1. + .001 * My.sigmoid ( l ) ) * this.l;
-
-		dV.multiplyScalar( l2 / d );
-
-		var
-		dC = ( v0.clone ( ).add ( v1 ) ).multiplyScalar ( .5 ),
-		dV0 = dC.clone ( ).sub ( dV ),
-		dV1 = dC.clone ( ).add ( dV );
-
-		if ( !pMasses[ this.i0 ].fix )
-
-			pVerts[ this.i0 ].add ( dV0 );
-
-		if ( !pMasses[ this.i1 ].fix )
-
-			pVerts[ this.i1 ].add ( dV1 );
-	}
-}
-
-My.Fabrique.prototype = {
-
-	constructor   : My.Fabrique,
-
-	sigmoIt       : function ( pDt ) {
-
-		for ( var i = 0; i < this.mesh.geometry.vertices.length; ++i ) {
-
-			if ( !this.masses[ i ].fix )
-
-				this.mesh.geometry.vertices[ i ].set ( 0, 0, 0 );
-		}
-
-		for ( var i = 0; i < this.springs.length; ++i ) {
-
-			this.springs[ i ].sigmoIt ( this.mesh.geometry.vertices, this.masses );
-		}
-
-		for ( var i = 0; i < this.mesh.geometry.vertices.length; ++i ) {
-
-			if ( !this.masses[ i ].fix ) {
-
-				this.mesh.geometry.vertices[ i ].divideScalar ( this.masses[ i ].sum );
-				this.masses[ i ].vel.copy ( ( ( this.mesh.geometry.vertices[ i ].clone ( ).sub ( this.masses[ i ].tmp ) ).divideScalar ( 1.005 * pDt ) ).add ( this.masses[ i ].acc.clone ( ).multiplyScalar ( pDt ) ) );
-				this.masses[ i ].tmp.copy( this.mesh.geometry.vertices[ i ] );
-//				this.masses[ i ].pos.set( 0, 0, 0 );
-			}
-		}
 	},
 
-	live : function ( pDt ) {
+	reset : function ( pSpringConstant ) {
+
+		this.springConstant = pSpringConstant;
 
 		var
-		v  = this.mesh.geometry.vertices,
-		m  = this.masses;
+		area = this.width * this.width,
+		offs = .5 * ( this.width - 1 ),
+		i    = 0;
 
-		for ( var i = 0; i < m.length; ++i ) {
+		for ( var z = 0; z < this.width; ++z ) {
 
-			m[ i ].acc.set( 0, -98.1, 0 );
-		}
+			for ( var x = 0; x < this.width; ++x ) {
 
-		for ( var i = 0; i < this.springs.length; ++i ) {
-
-			var
-			s  = this.springs[ i ],
-			m0 = m[ s.i0 ],
-			m1 = m[ s.i1 ],
-			v0 = v[ s.i0 ],
-			v1 = v[ s.i1 ].clone( ),
-			d  = v1.sub ( v0 ),
-			l  = d.length( ),
-			f  = this.springConstant * ( 1 - s.l / l );
-
-			d.multiplyScalar( f );
-			m0.acc.add ( d.clone( ) );
-			m1.acc.sub ( d.clone( ) );
-		}
-
-		for ( var i = 0; i < m.length; ++i ) {
-
-			var
-			mi = m[ i ];
-
-			if ( !mi.fix ) {
-
-				mi.pos.add ( mi.vel.clone ( ).multiplyScalar ( pDt ) );
-//				mi.vel.add( ( mi.acc.clone ( ).multiplyScalar( pDt ) ).sub ( mi.vel.clone ( ).multiplyScalar( 0.5 ) ) );
+				this.masses[ i ].pos.set ( x - offs, .6 * this.width + ( z == 0 ? 0 : .1 * ( 2 * Math.random ( ) - 1 ) ), z - offs, z == 0 );
+				this.masses[ i ].vel.set ( 0, 0, 0 );
+				this.masses[ i ].acc.set ( 0, 0, 0 );
+				this.masses[ i ].tmp.copy ( this.masses[ i ].pos );
+				this.mesh.geometry.vertices[ i ].copy( this.masses[ i ].pos );
+				++i;
 			}
 		}
-
-		this.sigmoIt( pDt );
 	}
 }
