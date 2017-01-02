@@ -106,13 +106,22 @@
 
 			var
 			lta = new THREE.AmbientLight( 0x404040, 1 ),
-			lgt = new THREE.PointLight( 0xd0e0f0, 3, 5. * WDTH, 2 ),
-			lth = new THREE.PointLightHelper( lgt, 1 );
-			lgt.position.set( 0, 0, .25 * WDTH );
+			lgt = new THREE.PointLight( 0xd0e0f0, 5, 3. * WDTH, 2 ),
+			lgt2 = new THREE.PointLight( 0xd05030, 4, 2. * WDTH, 2 ),
+			lgt3 = new THREE.PointLight( 0x50d030, 4, 2. * WDTH, 2 ),
+			lth = new THREE.PointLightHelper( lgt, 3 ),
+			lth2 = new THREE.PointLightHelper( lgt2, 1 ),
+			lth3 = new THREE.PointLightHelper( lgt3, 1 );
+			lgt2.position.set(  .25 * WDTH, .6 * WDTH, -.0 * WDTH );
+			lgt3.position.set( -.25 * WDTH, .6 * WDTH, -.0 * WDTH );
 
 			scn.add( lta );
 			scn.add( lgt );
+			scn.add( lgt2 );
+			scn.add( lgt3 );
 			scn.add( lth );
+			scn.add( lth2 );
+			scn.add( lth3 );
 
 			var
 			fabric = new My.Fabrique ( WDTH, 4e3 );
@@ -153,7 +162,7 @@
 				var
 				phi = .5 * Math.sin( .001 * now );
 
-				lgt.position.set( WDTH * Math.sin( phi ), .75 * WDTH - WDTH * Math.cos( phi ), .5 * WDTH );
+				lgt.position.set( WDTH * Math.sin( phi ), .6 * WDTH - WDTH * Math.cos( phi ), .5 * WDTH );
 
 				render ( );
 
@@ -171,7 +180,10 @@
 
 				WDTH = parseInt ( mCtl.width );
 
-				fabric = new My.Fabrique ( WDTH, mCtl.k, parseInt ( 0x1000000 * Math.random( ) ) & 0x1f1f1f, mCtl.smooth );
+				lgt2.position.set(  .3 * WDTH, .6 * WDTH, -.0045 * WDTH );
+				lgt3.position.set( -.3 * WDTH, .6 * WDTH, -.0045 * WDTH );
+
+				fabric = new My.Fabrique ( WDTH, mCtl.k, parseInt ( 0x1000000 * Math.random( ) ) & 0x0f0f0f, mCtl.smooth );
 				scn.add ( fabric.mesh );
 
 				tm   = ( new Date ( ) ).getTime ( );
