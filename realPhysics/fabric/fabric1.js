@@ -47,7 +47,7 @@ My = {
 		++pMasses[ pId1 ].sum;
 	},
 
-	Fabrique : function ( pWidth = 32, pSpringConstant = 1e3, pColor = 0xFF3020, pSmoothShading = true ) {
+	Fabrique : function ( pWidth = 32, pSpringConstant = 1e3, pColor = 0xFF3020, pSmoothShading = true, pStruts = true ) {
 
 		this.mesh           = null;
 		this.springConstant = pSpringConstant;
@@ -55,7 +55,7 @@ My = {
 		this.springs        = [ ];
 		this.masses			= [ ];
 
-		this.init( pWidth, pSpringConstant, pColor, pSmoothShading );
+		this.init( pWidth, pSpringConstant, pColor, pSmoothShading, pStruts );
 	}
 }
 
@@ -163,7 +163,7 @@ My.Fabrique.prototype = {
 		this.sigmoIt( pDt );
 	},
 
-	init : function ( pWidth, pSpringConstant, pColor = 0xFF3020, pSmoothShading = true ) {
+	init : function ( pWidth, pSpringConstant, pColor = 0xFF3020, pSmoothShading = true, pStruts = true ) {
 
 		this.mesh           = new THREE.Mesh ( new THREE.Geometry ( ), new THREE.MeshPhongMaterial ( { color: pColor, side: THREE.DoubleSide, shading : ( pSmoothShading ? THREE.SmoothShading : THREE.FlatShading ) } ) );
 		this.springConstant = pSpringConstant;
@@ -179,7 +179,7 @@ My.Fabrique.prototype = {
 
 			for ( var x = 0; x < this.width; ++x ) {
 
-				this.masses.push ( new My.Mass( x - offs, .6 * this.width + ( z == 0 ? 0 : 0.01 * ( 2 * Math.random ( ) - 1 ) ), z - offs, z == 0 ) );
+				this.masses.push ( new My.Mass( x - offs, .6 * this.width + ( z == 0 ? 0 : 0.5 * ( 2 * Math.random ( ) - 1 ) ), z - offs, z == 0 ) );
 				this.mesh.geometry.vertices.push( this.masses[ this.masses.length - 1 ].pos.clone ( ) );
 			}
 		}
@@ -208,20 +208,23 @@ My.Fabrique.prototype = {
 			}
 		}
 
-		for ( var z = 0; z < this.width - 1; ++z ) {
+		if ( pStruts ) {
 
-			for ( var x = 0; x < this.width - 1; ++x ) {
+			for ( var z = 0; z < this.width - 1; ++z ) {
 
-				var
-				from = x * this.width + z,
-				to   = ( x + 1 ) * this.width + z + 1;
+				for ( var x = 0; x < this.width - 1; ++x ) {
 
-				this.springs.push ( new My.Spring ( from, to, this.masses ) );
+					var
+					from = x * this.width + z,
+					to   = ( x + 1 ) * this.width + z + 1;
 
-				from = x * this.width + z + 1;
-				to   = ( x + 1 ) * this.width + z;
+					this.springs.push ( new My.Spring ( from, to, this.masses ) );
 
-				this.springs.push ( new My.Spring ( from, to, this.masses ) );
+					from = x * this.width + z + 1;
+					to   = ( x + 1 ) * this.width + z;
+
+					this.springs.push ( new My.Spring ( from, to, this.masses ) );
+				}
 			}
 		}
 
@@ -248,28 +251,5 @@ My.Fabrique.prototype = {
 		this.mesh.geometry.computeFaceNormals ( );
 		this.mesh.geometry.computeVertexNormals ( );
 		*/
-	},
-
-	reset : function ( pSpringConstant ) {
-
-		this.springConstant = pSpringConstant;
-
-		var
-		area = this.width * this.width,
-		offs = .5 * ( this.width - 1 ),
-		i    = 0;
-
-		for ( var z = 0; z < this.width; ++z ) {
-
-			for ( var x = 0; x < this.width; ++x ) {
-
-				this.masses[ i ].pos.set ( x - offs, .6 * this.width + ( z == 0 ? 0 : .1 * ( 2 * Math.random ( ) - 1 ) ), z - offs, z == 0 );
-				this.masses[ i ].vel.set ( 0, 0, 0 );
-				this.masses[ i ].acc.set ( 0, 0, 0 );
-				this.masses[ i ].tmp.copy ( this.masses[ i ].pos );
-				this.mesh.geometry.vertices[ i ].copy( this.masses[ i ].pos );
-				++i;
-			}
-		}
 	}
 }

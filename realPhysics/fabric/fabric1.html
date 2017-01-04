@@ -13,9 +13,6 @@
 				border :0;
 				padding:0;
 				margin:0;
-				display : block;
-				width:  100%;
-				height: 100%;
 			}
 
 		</style>
@@ -58,6 +55,7 @@
 				this.width  = 40;
 				this.k      = 3e3;
 				this.smooth = true;
+				this.struts = true;
 				this.start  = function ( ) {
 
 					reset ( );
@@ -69,6 +67,8 @@
 			gCtl.add ( mCtl, 'width', 2, 128 );
 			gCtl.add ( mCtl, 'k', 1, 20000, 10 );
 			gCtl.add ( mCtl, 'smooth', true );
+			gCtl.add ( mCtl, 'struts', true );
+			
 			gCtl.add ( mCtl, 'start' );
 
 			//wCtl.onFinishChange ( )
@@ -124,7 +124,7 @@
 			scn.add( lth3 );
 
 			var
-			fabric = new My.Fabrique ( WDTH, 4e3 );
+			fabric = new My.Fabrique ( WDTH, 4e3, 0xFF3020, true, true );
 
 			scn.add ( fabric.mesh );
 
@@ -183,7 +183,7 @@
 				lgt2.position.set(  .3 * WDTH, .6 * WDTH, -.0045 * WDTH );
 				lgt3.position.set( -.3 * WDTH, .6 * WDTH, -.0045 * WDTH );
 
-				fabric = new My.Fabrique ( WDTH, mCtl.k, 0x101010 * parseInt ( 4 * Math.random( ) ) + ( parseInt ( 0x1000000 * Math.random( ) ) & 0x0f0f0f ), mCtl.smooth );
+				fabric = new My.Fabrique ( WDTH, mCtl.k, 0x101010 * parseInt ( 4 * Math.random( ) ) + ( parseInt ( 0x1000000 * Math.random( ) ) & 0x0f0f0f ), mCtl.smooth, mCtl.struts );
 				scn.add ( fabric.mesh );
 
 				tm   = ( new Date ( ) ).getTime ( );
