@@ -5,12 +5,22 @@
 
 		<meta charset="utf-8" />
 
-		<title>dArk mAtter</title>
+		<title>fabric 2</title>
 
 		<style type="text/css">
 
+			html, body, canvas {
+				border :0;
+				padding:0;
+				margin:0;
+				display : block;
+				width:  100%;
+				height: 100%;
+			}
+
 		</style>
 
+<!--
 		<script src="../../../three.js/build/three.js" type="text/javascript"></script>
 
 		<script src="../../../three.js/examples/js/controls/OrbitControls.js" type="text/javascript"></script>
@@ -18,8 +28,7 @@
 		<script src="../../../three.js/examples/js/libs/stats.min.js"></script>
 
 		<script src="../../../three.js/examples/js/libs/dat.gui.min.js"></script>
-
-<!--
+-->
 		<script src="https://threejs.org/build/three.js" type="text/javascript"></script>
 
 		<script src="https://threejs.org/examples/js/controls/OrbitControls.js" type="text/javascript"></script>
@@ -27,7 +36,7 @@
 		<script src="https://threejs.org/examples/js/libs/stats.min.js"></script>
 
 		<script src="https://threejs.org/examples/js/libs/dat.gui.min.js"></script>
--->
+
 		<script src="fabric2.js" type="text/javascript"></script>
 
 	</head>
@@ -41,7 +50,39 @@
 		<script type="text/javascript">
 
 			var
-			WDTH = 30;
+			stats = new Stats ( );
+
+			var
+			MCtl = function ( ) {
+
+				this.width     = 40;
+				this.fixPeriod = 1;
+				this.k         = 3e3;
+				this.smooth    = true;
+				this.struts    = true;
+				this.start     = function ( ) {
+
+					reset ( );
+				}
+			},
+			mCtl = new MCtl ( ),
+			gCtl = new dat.GUI ( );
+
+			gCtl.add ( mCtl, 'width', 2, 128 );
+			gCtl.add ( mCtl, 'fixPeriod', 1, 129, 1 );
+			gCtl.add ( mCtl, 'k', 1, 20000, 10 );
+			gCtl.add ( mCtl, 'smooth', true );
+			gCtl.add ( mCtl, 'struts', true );
+
+			gCtl.add ( mCtl, 'start' );
+
+			//wCtl.onFinishChange ( )
+
+			stats.showPanel ( 0 );
+			document.body.appendChild ( stats.dom );
+
+			var
+			WDTH = 40;
 
 			var
 			tm   = ( new Date ( ) ).getTime ( ),
@@ -50,14 +91,14 @@
 
 			var
 			cmr  = new THREE.PerspectiveCamera ( 60, window.innerWidth / window.innerHeight, .1, 10000 );
-			cmr.position.set ( -1. *WDTH, 0, 10. * WDTH );
+			cmr.position.set ( 0., .0 * WDTH, 1.5 * WDTH );
 			cmr.up.set( 0, 1, 0 );
-			cmr.lookAt( new THREE.Vector3 ( 0, WDTH, 0 ) );
+			cmr.lookAt( new THREE.Vector3 ( 0, 0, 0 ) );
 
 			var
 			rndr = new THREE.WebGLRenderer ( );
 			rndr.setSize ( window.innerWidth, window.innerHeight );
-			rndr.shadowMap.enabled = true;
+//			rndr.shadowMap.enabled = true;
 
 			document.body.appendChild ( rndr.domElement );
 
@@ -69,22 +110,30 @@
 			scn = new THREE.Scene( );
 
 			var
-			lta = new THREE.AmbientLight( 0x406080, 2 ),
-			lgt = new THREE.PointLight( 0x80c0f0, 3, 2.5 * WDTH, 2 ),
-			lth = new THREE.PointLightHelper( lgt, 1 );
-			lgt.position.set( 0, .5 * WDTH, +.25 * WDTH );
+			lta = new THREE.AmbientLight( 0x404040, 1 ),
+			lgt = new THREE.PointLight( 0xd0e0f0, 5, 3. * WDTH, 2 ),
+			lgt2 = new THREE.PointLight( 0xd05030, 4, 2. * WDTH, 2 ),
+			lgt3 = new THREE.PointLight( 0x50d030, 4, 2. * WDTH, 2 ),
+			lth = new THREE.PointLightHelper( lgt, 3 ),
+			lth2 = new THREE.PointLightHelper( lgt2, 1 ),
+			lth3 = new THREE.PointLightHelper( lgt3, 1 );
+			lgt2.position.set(  .25 * WDTH, .6 * WDTH, -.0 * WDTH );
+			lgt3.position.set( -.25 * WDTH, .6 * WDTH, -.0 * WDTH );
 
 			scn.add( lta );
 			scn.add( lgt );
+			scn.add( lgt2 );
+			scn.add( lgt3 );
 			scn.add( lth );
+			scn.add( lth2 );
+			scn.add( lth3 );
 
 			var
-			fabrique = new My.Fabrique ( WDTH, 2e3 );
-			fabrique.mesh.geometry.translate( 0., 0.7* WDTH, -.5 * WDTH );
+			fabric = new My.Fabrique ( WDTH, 4e3, 0xFF3020, true, true );
 
-			scn.add ( fabrique.mesh );
+			scn.add ( fabric.mesh );
 
-			reset( );
+			//reset( );
 
 			function animate ( ) {
 
@@ -92,31 +141,37 @@
 
 				now  = ( new Date ( ) ).getTime ( ) - tm;
 
+				stats.begin ( );
+
 				var
 				dt = 1e-3 * ( now - then );
 
 				then = now;
 
-				if( 1. < dt || dt < 1. / 120. )
+				dt = 1. / 60. < dt ? 1. / 60. : dt;
 
-					return;
+				for ( var i = 0; i < 10;++i )
 
-				for ( var i = 0; i < 4;++i )
+					fabric.live ( .1 * dt );
 
-					fabrique.live ( .25 * dt );
+//				fabric.mesh.rotateY( .01 );
 
-//				fabrique.mesh.rotateY( .000 );
+				fabric.mesh.geometry.computeFaceNormals ( );
+				fabric.mesh.geometry.computeVertexNormals ( );
 
-				fabrique.mesh.geometry.computeFaceNormals ( );
-				fabrique.mesh.geometry.computeVertexNormals ( );
+				fabric.mesh.geometry.verticesNeedUpdate = true;
+				fabric.mesh.geometry.normalsNeedUpdate  = true;
+				fabric.mesh.geometry.colorsNeedUpdate   = true;
+				fabric.mesh.geometry.dynamic            = true;
 
-				fabrique.mesh.geometry.verticesNeedUpdate = true;
-				fabrique.mesh.geometry.normalsNeedUpdate  = true;
-				fabrique.mesh.geometry.colorsNeedUpdate   = true;
-				fabrique.mesh.geometry.dynamic            = true;
+				var
+				phi = .5 * Math.sin( .001 * now );
 
+				lgt.position.set( WDTH * Math.sin( phi ), .6 * WDTH - WDTH * Math.cos( phi ), .5 * WDTH );
 
 				render ( );
+
+				stats.end ( );
 			}
 
 			function render ( ) {
@@ -126,12 +181,22 @@
 
 			function reset( ) {
 
+				scn.remove ( fabric.mesh );
+
+				WDTH = parseInt ( mCtl.width );
+
+				lgt2.position.set(  .3 * WDTH, .6 * WDTH, -.0045 * WDTH );
+				lgt3.position.set( -.3 * WDTH, .6 * WDTH, -.0045 * WDTH );
+
+				fabric = new My.Fabrique ( WDTH, mCtl.k, 0x101010 * parseInt ( 4 * Math.random( ) ) + ( parseInt ( 0x1000000 * Math.random( ) ) & 0x0f0f0f ), mCtl.smooth, mCtl.struts, mCtl.fixPeriod );
+				scn.add ( fabric.mesh );
+
 				tm   = ( new Date ( ) ).getTime ( );
 				then = ( new Date ( ) ).getTime ( ) - tm;
 				now  = ( new Date ( ) ).getTime ( ) - tm;
 
-				fabrique.mesh.geometry.computeFaceNormals ( );
-				fabrique.mesh.geometry.computeVertexNormals ( );
+				fabric.mesh.geometry.computeFaceNormals ( );
+				fabric.mesh.geometry.computeVertexNormals ( );
 
 				requestAnimationFrame ( render );
 			}

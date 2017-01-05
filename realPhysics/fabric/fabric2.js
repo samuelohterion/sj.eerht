@@ -47,95 +47,15 @@ My = {
 		++pMasses[ pId1 ].sum;
 	},
 
-	Fabrique : function ( pWidth = 100, pSpringConstant = 1, pMaterial = new THREE.MeshPhongMaterial ( { color: 0xe0c0a0, side: THREE.DoubleSide, shading: THREE.SmoothShading } ) ) {
+	Fabrique : function ( pWidth = 32, pSpringConstant = 1e3, pColor = 0xFF3020, pSmoothShading = true, pStruts = true, pFixPeriod = 1 ) {
 
-		this.mesh           = new THREE.Mesh ( new THREE.Geometry ( ), pMaterial );
+		this.mesh           = null;
 		this.springConstant = pSpringConstant;
 		this.width          = pWidth;
 		this.springs        = [ ];
 		this.masses			= [ ];
 
-		var
-		area = this.width * this.width,
-		offs = .5 * ( this.width - 1 );
-
-		for ( var z = 0; z < this.width; ++z ) {
-
-			for ( var x = 0; x < this.width; ++x ) {
-
-				this.masses.push ( new My.Mass( x - offs, 0.001 * ( 2 * Math.random ( ) - 1 ), z - offs, z == 0 ) );
-			}
-		}
-
-		for ( var x = 0; x < this.width; ++x ) {
-
-			for ( var z = 0; z < this.width - 1; ++z ) {
-
-				var
-				from = x * this.width + z,
-				to   = x * this.width + z + 1;
-
-				this.springs.push ( new My.Spring ( from, to, this.masses ) );
-			}
-		}
-
-		for ( var z = 0; z < this.width; ++z ) {
-
-			for ( var x = 0; x < this.width - 1; ++x ) {
-
-				var
-				from = x * this.width + z,
-				to   = ( x + 1 ) * this.width + z;
-
-				this.springs.push ( new My.Spring ( from, to, this.masses ) );
-			}
-		}
-
-		for ( var z = 0; z < this.width - 1; ++z ) {
-
-			for ( var x = 0; x < this.width - 1; ++x ) {
-
-				var
-				from = x * this.width + z,
-				to   = ( x + 1 ) * this.width + z + 1;
-
-				this.springs.push ( new My.Spring ( from, to, this.masses ) );
-
-				from = x * this.width + z + 1;
-				to   = ( x + 1 ) * this.width + z;
-
-				this.springs.push ( new My.Spring ( from, to, this.masses ) );
-			}
-		}
-
-		for ( var x = 0; x < this.width - 1; ++x ) {
-
-			for ( var z = 0; z < this.width - 1; ++z ) {
-
-				var
-				i0 = x * this.width + z,
-				i1 = x * this.width + z + 1,
-				i2 = ( x + 1 ) * this.width + z,
-				i3 = ( x + 1 ) * this.width + z + 1;
-
-				this.mesh.geometry.faces.push ( new THREE.Face3( i2, i0, i1 ) );
-				this.mesh.geometry.faces.push ( new THREE.Face3( i1, i3, i2 ) );
-			}
-		}
-/*
-		this.mesh.geometry.verticesNeedUpdate = true;
-		this.mesh.geometry.normalsNeedUpdate  = true;
-		this.mesh.geometry.colorsNeedUpdate   = true;
-		this.mesh.geometry.dynamic            = true;
-
-		this.mesh.geometry.computeFaceNormals ( );
-		this.mesh.geometry.computeVertexNormals ( );
-		*/
-
-		for ( var i = 0; i < this.masses.length; ++i ) {
-
-			this.mesh.geometry.vertices.push( this.masses[ i ].pos.clone ( ) );
-		}
+		this.init( pWidth, pSpringConstant, pColor, pSmoothShading, pStruts, pFixPeriod );
 	}
 }
 
@@ -151,7 +71,7 @@ My.Spring.prototype = {
 		dV = v1.clone ( ).sub ( v0 ),
 		d  = dV.length ( ),
 		l  = ( d - this.l ) / this.l,
-		l2 = .5 * ( 1. + .1 * My.sigmoid ( l ) ) * this.l;
+		l2 = .5 * ( 1. + .001 * My.sigmoid ( l ) ) * this.l;
 
 		dV.multiplyScalar( l2 / d );
 
@@ -193,7 +113,7 @@ My.Fabrique.prototype = {
 			if ( !this.masses[ i ].fix ) {
 
 				this.mesh.geometry.vertices[ i ].divideScalar ( this.masses[ i ].sum );
-				this.masses[ i ].vel.copy ( ( ( this.mesh.geometry.vertices[ i ].clone ( ).sub ( this.masses[ i ].tmp ) ).divideScalar ( 1.01 * pDt ) ).add ( this.masses[ i ].acc.clone ( ).multiplyScalar ( pDt ) ) );
+				this.masses[ i ].vel.copy ( ( ( this.mesh.geometry.vertices[ i ].clone ( ).sub ( this.masses[ i ].tmp ) ).divideScalar ( 1.0005 * pDt ) ).add ( this.masses[ i ].acc.clone ( ).multiplyScalar ( pDt ) ) );
 				this.masses[ i ].tmp.copy( this.mesh.geometry.vertices[ i ] );
 //				this.masses[ i ].pos.set( 0, 0, 0 );
 			}
@@ -241,5 +161,97 @@ My.Fabrique.prototype = {
 		}
 
 		this.sigmoIt( pDt );
+	},
+
+	init : function ( pWidth, pSpringConstant, pColor = 0xFF3020, pSmoothShading = true, pStruts = true, pFixPeriod = 1 ) {
+
+		this.mesh           = new THREE.Mesh ( new THREE.Geometry ( ), new THREE.MeshPhongMaterial ( { color: pColor, side: THREE.DoubleSide, shading : ( pSmoothShading ? THREE.SmoothShading : THREE.FlatShading ) } ) );
+		this.springConstant = pSpringConstant;
+		this.width          = pWidth;
+		this.springs.length = 0;
+		this.masses.length = 0;
+
+		var
+		area = this.width * this.width,
+		offs = .5 * ( this.width - 1 );
+
+		for ( var z = 0; z < this.width; ++z ) {
+
+			for ( var x = 0; x < this.width; ++x ) {
+
+//				this.masses.push ( new My.Mass( x - offs, .6 * this.width, z - offs, z == 0 ) );
+//				this.masses.push ( new My.Mass( x - offs, .6 * this.width + 0.* ( 2.5 * ( 2 * Math.random ( ) - 1 ) ), z - offs, ( z == 0 ) && ( ( x & 0x3 ) == 0x3 ) ) );
+				this.masses.push ( new My.Mass( x - offs, .6 * this.width + ( z == 0 ? 0 : 0.5 * ( 2 * Math.random ( ) - 1 ) ), z - offs, ( z == 0 ) && ( x % pFixPeriod == 0 ) ) );
+				this.mesh.geometry.vertices.push( this.masses[ this.masses.length - 1 ].pos.clone ( ) );
+			}
+		}
+
+		for ( var x = 0; x < this.width; ++x ) {
+
+			for ( var z = 0; z < this.width - 1; ++z ) {
+
+				var
+				from = x * this.width + z,
+				to   = x * this.width + z + 1;
+
+				this.springs.push ( new My.Spring ( from, to, this.masses ) );
+			}
+		}
+
+		for ( var z = 0; z < this.width; ++z ) {
+
+			for ( var x = 0; x < this.width - 1; ++x ) {
+
+				var
+				from = x * this.width + z,
+				to   = ( x + 1 ) * this.width + z;
+
+				this.springs.push ( new My.Spring ( from, to, this.masses ) );
+			}
+		}
+
+		if ( pStruts ) {
+
+			for ( var z = 0; z < this.width - 1; ++z ) {
+
+				for ( var x = 0; x < this.width - 1; ++x ) {
+
+					var
+					from = x * this.width + z,
+					to   = ( x + 1 ) * this.width + z + 1;
+
+					this.springs.push ( new My.Spring ( from, to, this.masses ) );
+
+					from = x * this.width + z + 1;
+					to   = ( x + 1 ) * this.width + z;
+
+					this.springs.push ( new My.Spring ( from, to, this.masses ) );
+				}
+			}
+		}
+
+		for ( var x = 0; x < this.width - 1; ++x ) {
+
+			for ( var z = 0; z < this.width - 1; ++z ) {
+
+				var
+				i0 = x * this.width + z,
+				i1 = x * this.width + z + 1,
+				i2 = ( x + 1 ) * this.width + z,
+				i3 = ( x + 1 ) * this.width + z + 1;
+
+				this.mesh.geometry.faces.push ( new THREE.Face3( i2, i0, i1 ) );
+				this.mesh.geometry.faces.push ( new THREE.Face3( i1, i3, i2 ) );
+			}
+		}
+/*
+		this.mesh.geometry.verticesNeedUpdate = true;
+		this.mesh.geometry.normalsNeedUpdate  = true;
+		this.mesh.geometry.colorsNeedUpdate   = true;
+		this.mesh.geometry.dynamic            = true;
+
+		this.mesh.geometry.computeFaceNormals ( );
+		this.mesh.geometry.computeVertexNormals ( );
+		*/
 	}
 }
