@@ -179,7 +179,7 @@ My.Fabrique.prototype = {
 
 			for ( var x = 0; x < this.width; ++x ) {
 
-				this.masses.push ( new My.Mass( x - offs, .6 * this.width + ( z == 0 ? 0 : 0.5 * ( 2 * Math.random ( ) - 1 ) ), z - offs, ( z == 0 ) && ( ( x & 3 ) == 3 ) );
+				this.masses.push ( new My.Mass( x - offs, .6 * this.width + ( z == 0 ? 0 : 0.5 * ( 2 * Math.random ( ) - 1 ) ), z - offs, ( z == 0 ) && ( x & 3 ) == 3 ) );
 				this.mesh.geometry.vertices.push( this.masses[ this.masses.length - 1 ].pos.clone ( ) );
 			}
 		}
