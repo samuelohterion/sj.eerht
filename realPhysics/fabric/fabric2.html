@@ -37,6 +37,8 @@
 
 		<script src="https://threejs.org/examples/js/libs/dat.gui.min.js"></script>
 
+		<link rel="stylesheet" href="fabric2.css">
+
 		<script src="fabric2.js" type="text/javascript"></script>
 
 	</head>
@@ -59,7 +61,16 @@
 				this.fixPeriod = 1;
 				this.k         = 3e3;
 				this.smooth    = true;
-				this.struts    = true;
+				this.struts    = new function ( ) {
+					this.bottomLeft2TopRight = true;
+					this.topLeft2BottomRight = true;
+				}
+				this.colors = new function ( ) {
+					this.color0 = "#ffae23"; // CSS string
+					this.color1 = [ 0, 128, 255 ]; // RGB array
+					this.color2 = [ 0, 128, 255, 0.3 ]; // RGB with alpha
+					this.color3 = { h: 350, s: 0.9, v: 0.3 }; // Hue, saturation, value
+				}
 				this.start     = function ( ) {
 
 					reset ( );
@@ -68,11 +79,22 @@
 			mCtl = new MCtl ( ),
 			gCtl = new dat.GUI ( );
 
-			gCtl.add ( mCtl, 'width', 2, 128 );
-			gCtl.add ( mCtl, 'fixPeriod', 1, 129, 1 );
-			gCtl.add ( mCtl, 'k', 1, 20000, 10 );
-			gCtl.add ( mCtl, 'smooth', true );
-			gCtl.add ( mCtl, 'struts', true );
+			gCtl.add ( mCtl, 'width', 2, 128 ).name ( "width" );
+			gCtl.add ( mCtl, 'fixPeriod', 1, 129, 1 ).name ( "fixing period" );
+			gCtl.add ( mCtl, 'k', 1, 20000, 10 ).name ( "spring constant" );
+			gCtl.add ( mCtl, 'smooth', true ).name( "smooth or flat" );
+			var
+			strutsFldr = gCtl.addFolder ( 'struts' );
+
+			strutsFldr.add ( mCtl.struts, 'bottomLeft2TopRight' ).name( "from bottom left to top right" );
+			strutsFldr.add ( mCtl.struts, 'topLeft2BottomRight' ).name( "from top left to bottom right" );
+
+			var
+			colorsFldr = gCtl.addFolder ( 'colors' );
+			colorsFldr.addColor ( mCtl.colors, 'color0' ).name( "color of flag" );
+			colorsFldr.addColor ( mCtl.colors, 'color1' ).name( "color of background" );
+			colorsFldr.addColor ( mCtl.colors, 'color2' );
+			colorsFldr.addColor ( mCtl.colors, 'color3' );
 
 			gCtl.add ( mCtl, 'start' );
 
@@ -187,8 +209,19 @@
 
 				lgt2.position.set(  .3 * WDTH, .6 * WDTH, -.0045 * WDTH );
 				lgt3.position.set( -.3 * WDTH, .6 * WDTH, -.0045 * WDTH );
+				lta.color.setRGB ( mCtl.colors.color1[ 0 ] / 255., mCtl.colors.color1[ 1 ] / 255., mCtl.colors.color1[ 2 ] / 255. );
 
-				fabric = new My.Fabrique ( WDTH, mCtl.k, 0x101010 * parseInt ( 4 * Math.random( ) ) + ( parseInt ( 0x1000000 * Math.random( ) ) & 0x0f0f0f ), mCtl.smooth, mCtl.struts, mCtl.fixPeriod );
+				fabric = new My.Fabrique (
+					WDTH,
+					mCtl.k,
+					//0x101010 * parseInt ( 4 * Math.random( ) ) + ( parseInt ( 0x1000000 * Math.random( ) ) & 0x0f0f0f ),
+					mCtl.colors.color0,
+					mCtl.smooth,
+					mCtl.struts.bottomLeft2TopRight,
+					mCtl.struts.topLeft2BottomRight,
+					mCtl.fixPeriod
+				);
+
 				scn.add ( fabric.mesh );
 
 				tm   = ( new Date ( ) ).getTime ( );

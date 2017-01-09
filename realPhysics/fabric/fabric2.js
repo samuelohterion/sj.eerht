@@ -47,7 +47,7 @@ My = {
 		++pMasses[ pId1 ].sum;
 	},
 
-	Fabrique : function ( pWidth = 32, pSpringConstant = 1e3, pColor = 0xFF3020, pSmoothShading = true, pStruts = true, pFixPeriod = 1 ) {
+	Fabrique : function ( pWidth = 32, pSpringConstant = 1e3, pColor = 0xFF3020, pSmoothShading = true, pStrutsBL2TR = true, pStrutsTL2BR = true, pFixPeriod = 1 ) {
 
 		this.mesh           = null;
 		this.springConstant = pSpringConstant;
@@ -55,7 +55,7 @@ My = {
 		this.springs        = [ ];
 		this.masses			= [ ];
 
-		this.init( pWidth, pSpringConstant, pColor, pSmoothShading, pStruts, pFixPeriod );
+		this.init( pWidth, pSpringConstant, pColor, pSmoothShading, pStrutsBL2TR, pStrutsTL2BR, pFixPeriod );
 	}
 }
 
@@ -163,7 +163,7 @@ My.Fabrique.prototype = {
 		this.sigmoIt( pDt );
 	},
 
-	init : function ( pWidth, pSpringConstant, pColor = 0xFF3020, pSmoothShading = true, pStruts = true, pFixPeriod = 1 ) {
+	init : function ( pWidth, pSpringConstant, pColor = 0xFF3020, pSmoothShading = true, pStrutsBL2TR = true, pStrutsTL2BR = true, pFixPeriod = 1 ) {
 
 		this.mesh           = new THREE.Mesh ( new THREE.Geometry ( ), new THREE.MeshPhongMaterial ( { color: pColor, side: THREE.DoubleSide, shading : ( pSmoothShading ? THREE.SmoothShading : THREE.FlatShading ) } ) );
 		this.springConstant = pSpringConstant;
@@ -192,7 +192,7 @@ My.Fabrique.prototype = {
 
 				var
 				from = x * this.width + z,
-				to   = x * this.width + z + 1;
+				to   = from + 1;
 
 				this.springs.push ( new My.Spring ( from, to, this.masses ) );
 			}
@@ -204,26 +204,30 @@ My.Fabrique.prototype = {
 
 				var
 				from = x * this.width + z,
-				to   = ( x + 1 ) * this.width + z;
+				to   = from + this.width;
 
 				this.springs.push ( new My.Spring ( from, to, this.masses ) );
 			}
 		}
 
-		if ( pStruts ) {
+		for ( var z = 0; z < this.width - 1; ++z ) {
 
-			for ( var z = 0; z < this.width - 1; ++z ) {
+			for ( var x = 0; x < this.width - 1; ++x ) {
 
-				for ( var x = 0; x < this.width - 1; ++x ) {
+				if ( pStrutsBL2TR ) {
 
 					var
 					from = x * this.width + z,
-					to   = ( x + 1 ) * this.width + z + 1;
+					to   = from + this.width + 1;
 
 					this.springs.push ( new My.Spring ( from, to, this.masses ) );
+				}
 
+				if ( pStrutsTL2BR ) {
+
+					var
 					from = x * this.width + z + 1;
-					to   = ( x + 1 ) * this.width + z;
+					to   = from + this.width - 1;
 
 					this.springs.push ( new My.Spring ( from, to, this.masses ) );
 				}
